@@ -1,4 +1,3 @@
-import logo from './logo.svg';
 import Navbar from './Navbar';
 import './App.css';
 import Heroimg from './public/img/herohouse.png'
@@ -21,14 +20,15 @@ function App() {
           </button>
           </div>
         </div>
-        <div className="hero-right flex-1 ">
-           <Img 
+         <div className="hero-right flex-1 ">
+           <Image
             src={Heroimg} 
             alt="Colorful house illustration"
             width={400}
             height={400}
-            className="object-contain"/>
-        </div>
+            className="object-contain"
+           />
+        </div> 
         </div>
       </section>
     </div>
