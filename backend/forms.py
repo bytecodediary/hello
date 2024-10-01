@@ -1,11 +1,11 @@
-from django import forms
+# from django import forms
 
-class UserForm(forms.ModelForm):
+# class UserForm(forms.ModelForm):
     
-    class Meta:
-        model = "User"
-        fields = ("username", "password", "email")
+#     class Meta:
+#         model = "User"
+#         fields = ("username", "password", "email")
 
-        widgets = {
-            "emails": forms.EmailField(attrs={"placeholder": "Enter your Email Here", })
-        }
+#         widgets = {
+#             "emails": forms.EmailField(attrs={"placeholder": "Enter your Email Here", })
+#         }
