@@ -25,7 +25,7 @@ function App() {
             src={Heroimg} 
             alt="Colorful house illustration"
             width={400}
-            height={400}
+            height={40}
             className="object-contain"
            />
         </div> 
