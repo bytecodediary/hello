@@ -1,25 +1,42 @@
 "use client";
+
+import { useEffect, useState } from 'react';
 import Header from "@/app/Components/Layouts/Header";
 import Footer from "@/app/Components/Layouts/Footer";
 import CardProperties from "@/app/Components/ui/Cardproperties";
 import PropertySearch from "./Property-search";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/Components/ui/select";
 
-interface PropertyListingHeaderProps {
-  resultCount: number;
-  area: string;
-}
-
 export default function Buy() {
+  const [fix, setFix] = useState(false);
+
+  const setFixedSidebar = () => {
+    const scrollY = window.scrollY;
+    if (scrollY >= 150 && !fix) {
+      setFix(true);
+    } else if (scrollY < 150 && fix) {
+      setFix(false);
+    }
+  };
+  
+
+  useEffect(() => {
+    window.addEventListener('scroll', setFixedSidebar);
+    return () => {
+      window.removeEventListener('scroll', setFixedSidebar);
+    };
+  }, []);
+
   return (
     <div>
       <Header />
-      <div className="flex border-2">
-        <div className="w-1/3 p-4 border-2 shadow-lg">
+      <section>
+      <div className="flex flex-grow border-2 max-h-full  ">
+        <div className={`w-1/3 p-4 border-2 shadow-lg ${fix ? ' fixed  h-screen' : 'sidebar'}`}>
           <PropertySearch />
         </div>
-        <div className="w-2/3 p-4 border-2 shadow-lg">
-          <div className="bg-[[#f8faf8]] p-4 rounded-lg">
+        <div className={`w-2/3 p-4 border-2 shadow-lg ${fix ? 'ml-[33.33%]' : ''}`}>
+          <div className="bg-[#f8faf8] p-4 rounded-lg">
             <div className="flex justify-between items-center">
               <div>
                 <p className="text-sm text-gray-600 mb-1">
@@ -46,8 +63,9 @@ export default function Buy() {
             </div>
           </div>
           <CardProperties />
-        </div>
+        </div>a
       </div>
+      </section>
       <Footer />
     </div>
   );
