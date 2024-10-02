@@ -17,9 +17,9 @@ The **Real Estate Management System** is a web application designed to streamlin
   
 ## Technologies Used
 
-- **Backend**: Django / Flask / Node.js (choose your tech stack)
-- **Frontend**: HTML5, CSS3, JavaScript (React or Vue.js)
-- **Database**: PostgreSQL / MySQL / MongoDB
+- **Backend**: Django 
+- **Frontend**: JavaScript (React)
+- **Database**: PostgreSQL
 - **Authentication**: JWT / OAuth for secure login and user management
 - **Deployment**: Docker, Nginx, and Gunicorn for scalable production deployment
 
