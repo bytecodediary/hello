@@ -70,7 +70,7 @@ const properties: Property[] = [
 
 export default function CardProperties() {
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 bg-black">
+    <div className="grid gap-4 md:grid-row-2 lg:grid-row-3 bg-white ">
       {properties.map((property) => (
         <Card1 key={property.id} className="overflow-hidden">
           <img
@@ -108,7 +108,7 @@ export default function CardProperties() {
             </div>
             <Button
               label="Contact Stakeholder"
-              variant="secondary"
+              variant="primary"
               onClick={() => console.log("List property clicked")}
             />
           </CardFooter>

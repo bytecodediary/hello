@@ -11,15 +11,15 @@
 
 /* Primary button (red background) */
 .button.primary {
-  background-color: rgb(230, 29, 32);
-  color: white;
+  background-color: #bdb0c7;
+  color: #0e140e;
   padding: 0 50px 0 60px;
 }
 
 /* Secondary button (outlined white background) */
 .button.secondary {
-  background-color: #fff;
-  color: #808080;
+  background-color: #6f9972;
+  color: #0e140e;
 }
 
 

@@ -9,7 +9,7 @@ export default function Header() {
       </div>
       <ul className="flex space-x-10 ">
         <li>
-          <Link href="/Pages/Dashboard/" className="text-gray-600 hover:text-gray-900">
+          <Link href="/Pages/Search/" className="text-gray-600 hover:text-gray-900">
             Buy
           </Link>
         </li>
