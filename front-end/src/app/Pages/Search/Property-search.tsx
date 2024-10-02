@@ -1,23 +1,20 @@
-import { useState } from 'react'
-import  { InputSearch }  from "../../Components/ui/Input-search"
-import {ButtonSearch }  from "../../Components/ui/Buttonsearch"
-import  {Checkbox } from "../../Components/ui/checkbox"
-import { ArrowLeft } from "lucide-react"
+import { useState } from 'react';
+import { InputSearch } from "../../Components/ui/Input-search";
+import { ButtonSearch } from "../../Components/ui/Buttonsearch";
+import { Checkbox } from "../../Components/ui/checkbox";
+import { ArrowLeft } from "lucide-react";
 
 export default function PropertySearch() {
-  const [location, setLocation] = useState('')
-  const [propertyType, setPropertyType] = useState('')
-  const [priceRange, setPriceRange] = useState('')
-  const [bedrooms, setBedrooms] = useState('')
+  const [location, setLocation] = useState('');
 
   const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     // Implement search logic here
-    console.log('Searching with:', { location, propertyType, priceRange, bedrooms })
-  }
+    console.log('Searching with:', { location });
+  };
 
   return (
-    <div className="max-w-md mx-auto p-4 bg-white">
+    <div className="sidebar max-w-md mx-auto p-4 bg-white">
       <a href="/" className="flex items-center mb-4">
         <ArrowLeft className="w-6 h-6 mr-2" />
         <h1 className="text-xl font-semibold">Find your property</h1>
@@ -27,21 +24,6 @@ export default function PropertySearch() {
           placeholder="Enter city, state, or ZIP code"
           value={location}
           onChange={(e) => setLocation(e.target.value)}
-        />
-        <InputSearch
-          placeholder="Property type"
-          value={propertyType}
-          onChange={(e) => setPropertyType(e.target.value)}
-        />
-        <InputSearch
-          placeholder="Price range"
-          value={priceRange}
-          onChange={(e) => setPriceRange(e.target.value)}
-        />
-        <InputSearch
-          placeholder="Bedrooms"
-          value={bedrooms}
-          onChange={(e) => setBedrooms(e.target.value)}
         />
         <ButtonSearch type="submit" className="w-full bg-[#bdb0c7] hover:bg-[#bdb0c9] text-[#0e140e]" label={'Search'}>
           Search
@@ -74,5 +56,5 @@ export default function PropertySearch() {
         </div>
       </div>
     </div>
-  )
+  );
 }

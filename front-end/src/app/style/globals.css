@@ -29,3 +29,15 @@ body {
     text-wrap: balance;
   }
 }
+
+.sidebar{
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  
+}
+.sidebar.fixed{
+  position: fixed;
+  top: 6%;
+
+}
