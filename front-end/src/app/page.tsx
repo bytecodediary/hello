@@ -8,6 +8,7 @@ import { ChevronDown } from "lucide-react";
 import "./style/Homeservice.css";
 import Button from "./Components/ui/Button";
 import Footer from "./Components/Layouts/Footer";
+import CardProperties from "./Components/ui/Cardproperties";
 
 export default function Home() {
   return (
@@ -16,7 +17,7 @@ export default function Home() {
       <section className="container mx-auto pl-10 py-12 flex items-center justify-between">
         <div className="flex px-4 items-center">
           <div className="hero-left flex-1">
-            <h2 className="text-5xl font-bold leading-tight mb-4 text-black">
+            <h2 className="text-5xl font-bold leading-tight mb-4 text-black ">
               Timberline Heights: Your gateway platform for
             </h2>
             <p className="text-xl text-gray-600 mb-8">
@@ -73,6 +74,7 @@ export default function Home() {
         </div>
       </div>
       <Homeservice />
+      
       <Footer />
     </div>
   );

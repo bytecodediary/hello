@@ -41,3 +41,42 @@ const Card: React.FC<CardProps> = ({ title, description, buttonText, onClick, im
 };
 
 export default Card;
+
+
+export const Card1: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ className, children, ...props }) => (
+    <div className={`border rounded-lg shadow-md ${className}`} {...props}>
+      {children}
+    </div>
+  )
+
+  export const CardHeader: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ className, children, ...props }) => (
+    <div className={`p-4 border-b ${className}`} {...props}>
+      {children}
+    </div>
+  )
+  
+  export const CardContent: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ className, children, ...props }) => (
+    <div className={`p-4 ${className}`} {...props}>
+      {children}
+    </div>
+  )
+
+  
+  export const CardFooter: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ className, children, ...props }) => (
+    <div className={`p-4 border-t ${className}`} {...props}>
+      {children}
+    </div>
+  )
+  
+  export const CardTitle: React.FC<React.HTMLAttributes<HTMLHeadingElement>> = ({ className, children, ...props }) => (
+    <h3 className={`text-lg font-semibold ${className}`} {...props}>
+      {children}
+    </h3>
+  )
+
+  interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+    variant?: "default" | "destructive";
+  }
+  
+
+  

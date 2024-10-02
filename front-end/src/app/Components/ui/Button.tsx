@@ -22,4 +22,3 @@ const Button: React.FC<ButtonProps> = ({ label, variant, onClick }) => {
 
 export default Button;
 
-
