@@ -8,14 +8,14 @@ import requests
 # Create your models here.
 class CustomUser(AbstractUser):
     USER_TYPES = (
-        ('tenant', 'tenant'),
+        ('customer', 'customer'),
         ('agent', 'agent'),
-        ('landlord', 'landlord'),
+        ('proplord', 'proplord'),
     )
-    user_type = models.CharField(max_length=10, choices=USER_TYPES, default='tenant')
+    user_type = models.CharField(max_length=10, choices=USER_TYPES, default='customer')
 
 
-class Landlord(models.Model):
+class Prop_Lord(models.Model):
     name = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     email = models.EmailField()
     phone_number = models.IntegerField(max_length=12)
@@ -37,7 +37,7 @@ class Property(models.Model):
     ("pending", "Pending"),
     ("available", "Available"),
     )
-    landlord = models.ForeignKey(Landlord, on_delete=models.CASCADE)
+    landlord = models.ForeignKey(Prop_Lord, on_delete=models.CASCADE)
     title = models.CharField(max_length=50)
     description = models.TextField()
     city = models.CharField(max_length=50)
