@@ -1,4 +1,9 @@
 //Search buttton
+"use client";
+
+import React from 'react';
+import './button.css'; 
+
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
     label: string;
   }

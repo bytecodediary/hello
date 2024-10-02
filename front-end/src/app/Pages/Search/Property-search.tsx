@@ -18,10 +18,10 @@ export default function PropertySearch() {
 
   return (
     <div className="max-w-md mx-auto p-4 bg-white">
-      <div className="flex items-center mb-4">
+      <a href="/" className="flex items-center mb-4">
         <ArrowLeft className="w-6 h-6 mr-2" />
         <h1 className="text-xl font-semibold">Find your property</h1>
-      </div>
+      </a>
       <form onSubmit={handleSearch} className="space-y-4">
         <InputSearch
           placeholder="Enter city, state, or ZIP code"
@@ -43,7 +43,7 @@ export default function PropertySearch() {
           value={bedrooms}
           onChange={(e) => setBedrooms(e.target.value)}
         />
-        <ButtonSearch type="submit" className="w-full bg-red-500 hover:bg-red-600 text-white" label={'Search'}>
+        <ButtonSearch type="submit" className="w-full bg-[#bdb0c7] hover:bg-[#bdb0c9] text-[#0e140e]" label={'Search'}>
           Search
         </ButtonSearch>
       </form>
