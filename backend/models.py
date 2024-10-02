@@ -51,9 +51,6 @@ class Property(models.Model):
 
     def __str__(self):
         return self.title + self.status
-
-
-
     
 class CartItem(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
