@@ -1,7 +1,7 @@
-# hello
-# Real Estate Management System
 
-The **Real Estate Management System** is a web application designed to streamline the management, listing, and sale of real estate properties. The platform allows real estate agents, property owners, and potential buyers to interact seamlessly, facilitating property searches, listing management, and transactions in a user-friendly and efficient manner.
+# Real Estate System
+
+The **Real Estate System** is a web application designed to streamline the management, listing, and sale of real estate properties. The platform allows real estate agents, property owners, and potential buyers to interact seamlessly, facilitating property searches, listing management, and transactions in a user-friendly and efficient manner.
 
 ## Features
 
@@ -10,14 +10,14 @@ The **Real Estate Management System** is a web application designed to streamlin
 - **User Roles**: The system supports multiple user types such as administrators, property owners, and buyers, each with different permissions.
 - **Interactive Map**: Properties are displayed on an interactive map to enhance the user experience and help users find properties by location.
 - **Favorites**: Users can save properties to their favorites for quick access later.
-- **Messaging**: Direct messaging system between property owners/agents and buyers for inquiries.
+- **Messaging**: Direct messaging system between property owners/agents and buyers for inquiries.(TBD)
 - **Responsive Design**: Fully responsive, ensuring a seamless experience across desktop, tablet, and mobile devices.
 - **Admin Panel**: Comprehensive administrative panel for managing users, properties, transactions, and more.
 - **Secure Transactions**: Secure handling of property transactions, ensuring data privacy and integrity.
   
 ## Technologies Used
 
-- **Backend**: Django 
+- **Backend**: Django (filters, rest_framework, guardians)
 - **Frontend**: JavaScript (React)
 - **Database**: PostgreSQL
 - **Authentication**: JWT / OAuth for secure login and user management
@@ -27,12 +27,12 @@ The **Real Estate Management System** is a web application designed to streamlin
 
 1. Clone the repository:
     ```bash
-    git clone https://github.com/yourusername/real-estate-management-system.git
+    git clone https://github.com/trent130/hello.git
     ```
 
 2. Navigate to the project directory:
     ```bash
-    cd real-estate-management-system
+    cd hello
     ```
 
 3. Install the dependencies:
