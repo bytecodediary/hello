@@ -29,13 +29,7 @@ class Image(models.Model):
     def __str__(self):
         return self.image_alt
 
-class Property_features(models.Model):
-    property = models.ForeignKey(Property, on_delete=models.CASCADE)
-    feature_name = models.CharField(max_length=200)
-    feature_value = models.IntegerField(max_length=200)
 
-    def __str__(self):
-        return self.feature_name
 
 class Property(models.Model):
     status_choices =(
@@ -57,6 +51,14 @@ class Property(models.Model):
 
     def __str__(self):
         return self.title + self.status
+        
+class Property_features(models.Model):
+    property = models.ForeignKey(Property, on_delete=models.CASCADE)
+    feature_name = models.CharField(max_length=200)
+    feature_value = models.IntegerField(max_length=200)
+
+    def __str__(self):
+        return self.feature_name
     
 class CartItem(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
