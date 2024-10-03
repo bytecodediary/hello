@@ -1,10 +1,10 @@
 import { Star } from "lucide-react";
 import Button from "./Button";
 import { Card1, CardContent, CardFooter, CardHeader, CardTitle } from "./Card";
+import Image from "next/image";
 
 // Import images
-import placeholderImage from "../../Public/Image/apartment.svg"; 
-
+import placeholderImage from "../../Public/Image/spot1.webp";
 
 interface Property {
   id: string;
@@ -28,8 +28,19 @@ const properties: Property[] = [
     amenities: ["Free cancellation", "Amenities included"],
     rating: 4.6,
     price: "Price per",
-    priceUnit: "Duration of stay",
-    imageUrl: "../../Public/Image/apartment.svg",
+    priceUnit: "3 nights, 2 adults",
+    imageUrl: placeholderImage,
+  },
+  {
+    id: "1",
+    name: "Property Name",
+    location: "Suburb from your location",
+    description: "Number of bedrooms and bathrooms",
+    amenities: ["Free cancellation", "Amenities included"],
+    rating: 4.6,
+    price: "Price per",
+    priceUnit: "3 nights, 2 adults",
+    imageUrl: placeholderImage,
   },
   {
     id: "2",
@@ -70,41 +81,52 @@ const properties: Property[] = [
 
 export default function CardProperties() {
   return (
-    <div className="grid gap-4 md:grid-row-2 lg:grid-row-3 bg-white ">
+    <div className="grid gap-3 md:grid-row-2 lg:grid-row-3 bg-white">
       {properties.map((property) => (
         <Card1 key={property.id} className="overflow-hidden">
-          <img
-            src={property.imageUrl}
-            alt={property.name}
-            className="h-48 w-full object-cover"
-          />
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <span>{property.name}</span>
-              <span className="flex items-center text-sm">
-                <Star className="mr-1 h-4 w-4 fill-current" />
-                {property.rating}
-              </span>
-            </CardTitle>
-            <p className="text-sm text-muted-foreground">{property.location}</p>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm">{property.description}</p>
-            <ul className="mt-2 text-sm text-muted-foreground">
-              {property.amenities.map((amenity, index) => (
-                <li key={index}>{amenity}</li>
-              ))}
-            </ul>
-            {property.condition && (
-              <p className="mt-2 text-sm font-semibold">{property.condition}</p>
-            )}
-          </CardContent>
-          <CardFooter className="flex items-center justify-between">
+          <div className="flex">
+            <div>
+              <Image
+              src={property.imageUrl}
+              alt={property.name}
+              className="h-48 w-full object-cover"
+              width={300}
+              height={200}
+            />
+            </div>
+            <div>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <span>{property.name}</span>
+                  <span className="flex items-center text-sm">
+                    <Star className="mr-1 h-4 w-4 fill-current" />
+                    {property.rating}
+                  </span>
+                </CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  {property.location}
+                </p>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm">{property.description}</p>
+                <ul className="mt-2 text-sm text-muted-foreground">
+                  {property.amenities.map((amenity, index) => (
+                    <li key={index}>{amenity}</li>
+                  ))}
+                </ul>
+                {property.condition && (
+                  <p className="mt-2 text-sm font-semibold">
+                    {property.condition}
+                  </p>
+                )}
+              </CardContent>
+            </div>
+          </div>
+
+          <CardFooter className="flex flex-col items-center justify-between">
             <div>
               <p className="font-bold">{property.price}</p>
-              <p className="text-sm text-muted-foreground">
-                {property.priceUnit}
-              </p>
+              <p className="text-sm ">{property.priceUnit}</p>
             </div>
             <Button
               label="Contact Stakeholder"

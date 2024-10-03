@@ -44,7 +44,7 @@ export default Card;
 
 
 export const Card1: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ className, children, ...props }) => (
-    <div className={`border rounded-lg shadow-md ${className}`} {...props}>
+    <div className={`border flex justify-between rounded-lg shadow-md ${className}`} {...props}>
       {children}
     </div>
   )

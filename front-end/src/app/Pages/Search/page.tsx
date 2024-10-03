@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import Header from "@/app/Components/Layouts/Header";
-import Footer from "@/app/Components/Layouts/Footer";
 import CardProperties from "@/app/Components/ui/Cardproperties";
 import PropertySearch from "./Property-search";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/Components/ui/select";
@@ -66,7 +65,7 @@ export default function Buy() {
         </div>a
       </div>
       </section>
-      <Footer />
+      {/* <Footer /> */}
     </div>
   );
 }
