@@ -31,6 +31,7 @@ ALLOWED_HOSTS = ["*"]
 # Application definition
 
 INSTALLED_APPS = [
+    "grappelli",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -39,6 +40,8 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "backend",
     "rest_framework",
+    "django_filters",
+    "django_guardians",
 ]
 
 MIDDLEWARE = [

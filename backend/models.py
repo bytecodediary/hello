@@ -3,9 +3,7 @@ from django.contrib.auth.models import User, AbstractUser
 from django.forms import ValidationError
 from django.utils import timezone
 import datetime
-import requests
 
-# Create your models here.
 class CustomUser(AbstractUser):
     USER_TYPES = (
         ('customer', 'customer'),
@@ -30,7 +28,15 @@ class Image(models.Model):
 
     def __str__(self):
         return self.image_alt
-    
+
+class Property_features(models.Model):
+    property = models.ForeignKey(Property, on_delete=models.CASCADE)
+    feature_name = models.CharField(max_length=200)
+    feature_value = models.IntegerField(max_length=200)
+
+    def __str__(self):
+        return self.feature_name
+
 class Property(models.Model):
     status_choices =(
     ("sold", "Sold"),
@@ -122,7 +128,6 @@ class Agent(models.Model):
     def __str__(self):
         return self.Dob
     
-
 class Payment(models.Model):
     amount = models.IntegerField(default=0)
     date_paid = models.DateTimeField(auto_now=True)
