@@ -1,6 +1,6 @@
 from rest_framework import serializers, viewsets, routers
 from django.contrib.auth import authenticate
-from .models import CustomUser,Payment,Property
+from .models import CustomUser,Payment,Property,CartItem,Cart,Property_Features
 from django.contrib.auth.models import Group
 
 class CustomUserSerializer(serializers.ModelSerializer):
@@ -41,10 +41,18 @@ class LoginSerializer(serializers.ModelSerializer):
 
         data['user'] = user
         return data
+    
+class PropertyFeaturesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Property_Features
+        fields = ['feature_name', 'feature_value']
+
 class PropertySerializer(serializers.ModelSerializer):
+    features = PropertyFeaturesSerializer(many=True, required=False)
+
     class Meta:
         model = Property 
-        fields = ['slug', 'title','description', 'price', 'image', 'city', 'address', 'listed_at', 'updated_at']
+        fields = ['slug', 'title','description', 'price', 'image', 'city', 'address', 'listed_at', 'updated_at', 'features']
     
     def create(self,request, **validated_data):
         return Property.objects.create(**validated_data)
@@ -62,3 +70,22 @@ class PaymentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Payment
         fields = ['price']
+
+class CartItemSerializer(serializers.ModelSerializers):
+    class Meta:
+        model = CartItem
+        fields = ['id', 'property_name', 'quantity']
+
+class CartSerializer(serializers.ModelSerializer):
+    items = CartItemSerializer(many=True, read_only=True)
+    total_price = serializers.SerializerMethodField()
+   
+    class Meta:
+        model = Cart
+        fields = ['id', 'total_price', 'items', 'user']
+    
+    def get_total_price(self, obj):
+        total = sum(item.quantity * item.property.price for item in obj.items.all())
+        return total
+
+

@@ -87,7 +87,7 @@ class Property(models.Model):
     def __str__(self):
         return self.title + self.status
         
-class Property_features(models.Model):
+class Property_Features(models.Model):
     property = models.ForeignKey(Property, on_delete=models.CASCADE)
     feature_name = models.CharField(max_length=200)
     feature_value = models.IntegerField(max_length=200)
@@ -107,6 +107,7 @@ class Cart(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     total_price = models.IntegerField(decimal_places=2, default=0, max_digits=10)
     cart_items = models.ManyToManyField(CartItem, on_delete=models.CASCADE)
+    slug = models.SlugField()
         
     def total_price(self):
         return f"{self.price} x {self.product_amount} in the cart"
