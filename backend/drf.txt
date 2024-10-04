@@ -1,0 +1,27 @@
+1. GenericAPIView
+    Purpose: The base class for all generic views. It provides the basic behavior for handling requests and can be extended for custom functionality.
+    When to Use: Use it when you need a custom view that combines functionality from multiple generic views or when you need to implement specific methods (like get, post, etc.) while leveraging DRF’s built-in functionality.
+2. GenericListView
+    Purpose: Used for read-only endpoints to return a list of objects. It automatically provides pagination and filtering.
+    When to Use: Use it when you want to display a list of instances of a model.
+3. CreateApiView
+    Purpose: Used for creating new instances of a model. It handles POST requests automatically.
+    When to Use: Use it when you want to create a new object and handle input validation.
+4.RetieveApiView
+    Purpose: Used for retrieving a single instance of a model by its ID. Handles GET requests for a specific object.
+    When to Use: Use it when you want to provide details of a single object.
+5. UpdateApiView
+    Purpose: Used for updating an existing instance of a model. Handles PUT and PATCH requests.
+    When to Use: Use it when you want to modify an existing object.
+6. DestroyApiView
+    Purpose: Used for deleting an instance of a model. Handles DELETE requests.
+    When to Use: Use it when you want to allow users to delete an object.
+7. ListCreateApiView
+    Purpose: Combines ListAPIView and CreateAPIView. It allows you to list objects and create new ones in a single view.
+    When to Use: Use it when you want a view that can both return a list of objects and create a new object.
+8. RetrieveUpdateApiView
+    Purpose: Combines RetrieveAPIView and UpdateAPIView. It allows you to retrieve and update a single object in a single view.
+    When to Use: Use it when you want a view that can fetch the details of an object and update it.
+9. RetrieveDetroyApiView
+    Purpose: Combines RetrieveAPIView and DestroyAPIView. It allows you to retrieve and delete a single object.
+    When to Use: Use it when you want a view that can fetch and delete an object

@@ -63,7 +63,6 @@ class Image(models.Model):
     image = models.ImageField(upload_to="media/product_images")
     image_alt = models.TextField()
     
-
     def __str__(self):
         return self.image_alt
 
@@ -112,14 +111,14 @@ class Cart(models.Model):
     def total_price(self):
         return f"{self.price} x {self.product_amount} in the cart"
 
-class Transaction(models.Model):
+class Payment(models.Model):
     Transaction_types = (
     ('paid', 'paid'),
     ('refunded', 'refunded'),
     ('adjusted', 'adjusted')
     )
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    total_price = models.IntegerField(decimal_places=2, max_digits=10)
+    price = models.IntegerField(decimal_places=2, max_digits=10)
     transaction_type = models.CharField(max_length=50, choices=Transaction_types)
     description = models.CharField(max_length=255)
     added_at = models.DateTimeField(auto_now_add=True)
@@ -150,12 +149,11 @@ class client(models.Model):
     
 def validate_years(request):
     dob = Agent.objects.filter(Dob=dob, user=request.user)
-    now = datetime.now()
-    t22_years = now - datetime.timedelta(days=22*365.25)
+    time_now = datetime.now()
+    t22_years = time_now - datetime.timedelta(days=22*365.25)
     if dob < t22_years:
         return ValidationError(request, "Age is below 22 years")
     return dob
-
 
 class Agent(models.Model):
     name = models.ForeignKey(CustomUser, on_delete=models.CASCADE)

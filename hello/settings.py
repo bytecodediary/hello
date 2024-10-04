@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "django_filters",
     "django_guardians",
+    "corsheaders"
 ]
 
 MIDDLEWARE = [
@@ -52,6 +53,11 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "corsheaders.Middleware.CorsMiddleware",
+]
+
+CORS_ALLOWED_ORIGINS = [
+    "127.0.0.1:3000"
 ]
 
 ROOT_URLCONF = "hello.urls"
