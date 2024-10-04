@@ -73,7 +73,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "hello.wsgi.application"
-AUTH_USER_MODEL = "user.CustomUser"
+AUTH_USER_MODEL = "backend.CustomUser"
 
 REST_FRAMEWORK = {'DEFAULT_PERMISSION_CLASSES': [
             'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
