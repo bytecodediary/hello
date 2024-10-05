@@ -51,10 +51,13 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return self.email
 
+# class Profile(models.Model):
+#     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
+
+
 class Property_Lord(models.Model):
     name = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     phone_number = models.IntegerField(max_length=12)
-
 
     def __str__(self):
         return self.name.username
