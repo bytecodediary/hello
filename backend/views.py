@@ -3,8 +3,8 @@ from .models import Property
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login
 from django.contrib.auth.models import User
-from django import messages
-from .serializers import CustomUserSerializer, ChangeUserTypeSerializer,LoginSerializer,PropertySerializer,CartSerializer, CartItemserializer
+# from django import messages
+from .serializers import CustomUserSerializer, ChangeUserTypeSerializer,LoginSerializer,PropertySerializer,CartSerializer, CartItemSerializer
 from rest_framework import status, generics, permissions
 from .models import CustomUser, Property, Cart, CartItem
 from rest_framework.response import Response
@@ -44,7 +44,7 @@ class UserRegistrationView(generics.CreateAPIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
 
-class UserLoginView(generics.GenericApiView):
+class UserLoginView(generics.GenericAPIView):
     serializer_class = LoginSerializer
 
     def post(self,request,*args, **kwargs):
@@ -93,7 +93,7 @@ class CartAddItemView(generics.CreateAPIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 class CartUpdateItemView(generics.UpdateAPIView):
-    serializer_class = CartItemserializer
+    serializer_class = CartItemSerializer
 
     def get_item(self, slug):
         return CartItem.objects.get_or_create(slug=slug)

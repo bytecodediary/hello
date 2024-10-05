@@ -3,6 +3,7 @@ from django.contrib.auth.models import User, PermissionsMixin, BaseUserManager, 
 from django.forms import ValidationError
 from django.utils import timezone
 import datetime
+from django.core.validators import MaxValueValidator, MinValueValidator
 
 class CustomUserManager(BaseUserManager):
     def create_user(self, email,password=None, default='customer', **extra_fields):
@@ -37,7 +38,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     objects = CustomUserManager()
 
-    USERNAME_FIELDS = "email"
+    USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ['first_name', 'last_name', 'username']
 
     def apply_for_type_change(self,  new_type):
@@ -57,7 +58,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
 class Property_Lord(models.Model):
     name = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    phone_number = models.IntegerField(max_length=12)
+    phone_number = models.IntegerField()
 
     def __str__(self):
         return self.name.username
@@ -79,7 +80,7 @@ class Property(models.Model):
     title = models.CharField(max_length=50)
     description = models.TextField()
     city = models.CharField(max_length=50)
-    status = models.TextChoices(default=status_choices)
+    status = models.CharField(max_length=20, default=status_choices)
     address = models.CharField(max_length=50)
     listed_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -93,13 +94,13 @@ class Property(models.Model):
 class Property_Features(models.Model):
     property = models.ForeignKey(Property, on_delete=models.CASCADE)
     feature_name = models.CharField(max_length=200)
-    feature_value = models.IntegerField(max_length=200)
+    feature_value = models.IntegerField(default=0, validators=[MinValueValidator(0), MaxValueValidator(100)])
 
     def __str__(self):
         return self.feature_name
     
 class CartItem(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
     property_name = models.ForeignKey(Property, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
 
@@ -107,9 +108,9 @@ class CartItem(models.Model):
         return self.user.username
  
 class Cart(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    total_price = models.IntegerField(decimal_places=2, default=0, max_digits=10)
-    cart_items = models.ManyToManyField(CartItem, on_delete=models.CASCADE)
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
+    total_price = models.DecimalField(decimal_places=2, default=0, max_digits=10)
+    cart_items = models.ManyToManyField(CartItem)
     slug = models.SlugField()
         
     def total_price(self):
@@ -121,8 +122,8 @@ class Payment(models.Model):
     ('refunded', 'refunded'),
     ('adjusted', 'adjusted')
     )
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    price = models.IntegerField(decimal_places=2, max_digits=10)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    price = models.DecimalField(decimal_places=2, max_digits=10)
     transaction_type = models.CharField(max_length=50, choices=Transaction_types)
     description = models.CharField(max_length=255)
     added_at = models.DateTimeField(auto_now_add=True)
@@ -163,17 +164,17 @@ class Agent(models.Model):
     name = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     Dob = models.DateTimeField(default=validate_years)
     is_available = models.BooleanField(default=True)
-    listings = models.ManyToManyField(Property, on_delete=models.CASCADE)
+    listings = models.ManyToManyField(Property)
 
     def __str__(self):
         return self.Dob
     
-class Payment(models.Model):
+class Transaction(models.Model):
     amount = models.IntegerField(default=0)
     date_paid = models.DateTimeField(auto_now=True)
     transaction_desc = models.CharField(max_length=200)
     slug = models.SlugField()
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.user.username

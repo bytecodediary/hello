@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     "backend",
     "rest_framework",
     "django_filters",
-    "django_guardians",
+    # "django_guardians",
     "corsheaders"
 ]
 
@@ -57,7 +57,8 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
-    "127.0.0.1:3000"
+    "http://127.0.0.1:3000",
+    "http://localhost:3000"
 ]
 
 ROOT_URLCONF = "hello.urls"
@@ -93,10 +94,10 @@ DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
         "NAME": "realdb",
-        "POST": "5432",
-        "USER": "realUser",
-        "Host": "*",
-        "PASSWORD": "realdb5432",
+        "PORT": "5433",
+        "USER": "postgres",
+        "Host": "localhost",
+        "PASSWORD": "larrymax",
     }
 }
 

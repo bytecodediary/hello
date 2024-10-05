@@ -71,7 +71,7 @@ class PaymentSerializer(serializers.ModelSerializer):
         model = Payment
         fields = ['price']
 
-class CartItemSerializer(serializers.ModelSerializers):
+class CartItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = CartItem
         fields = ['id', 'property_name', 'quantity']
