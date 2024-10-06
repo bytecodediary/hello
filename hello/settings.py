@@ -23,9 +23,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-5%174s74sae9=xv3jt8=yhv)*%$8@)1$1dw+1)ff$0(zxvcg%1"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -86,6 +86,10 @@ REST_FRAMEWORK = {'DEFAULT_PERMISSION_CLASSES': [
             'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
                 ]
 }
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://localhost:8000",
+]
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
