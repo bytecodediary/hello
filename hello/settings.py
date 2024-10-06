@@ -97,9 +97,9 @@ CSRF_TRUSTED_ORIGINS = [
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "postgres",
+        "NAME": "unreal", #postgres
         "PORT": "5432",
-        "USER": "postgres",
+        "USER": "here", #postgres
         "Host": "localhost",
         "PASSWORD": "larrymax",
     }
