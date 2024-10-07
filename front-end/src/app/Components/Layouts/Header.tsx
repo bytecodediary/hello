@@ -14,7 +14,7 @@ export default function Header() {
           </Link>
         </li>
         <li>
-          <Link href="/view" className="text-gray-600 hover:text-gray-900">
+          <Link href="/Pages/invoices/" className="text-gray-600 hover:text-gray-900">
             Rent
           </Link>
         </li>
