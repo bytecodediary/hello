@@ -23,15 +23,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-5%174s74sae9=xv3jt8=yhv)*%$8@)1$1dw+1)ff$0(zxvcg%1"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = []
 
 
 # Application definition
 
 INSTALLED_APPS = [
-    "grappelli",
+    # "grappelli",
+    "adminplus",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -41,17 +42,24 @@ INSTALLED_APPS = [
     "backend",
     "rest_framework",
     "django_filters",
-    "django_guardians",
+    # "django_guardians",
+    "corsheaders"
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+]
+
+CORS_ALLOWED_ORIGINS = [
+    "http://127.0.0.1:3000",
+    "http://localhost:3000"
 ]
 
 ROOT_URLCONF = "hello.urls"
@@ -73,12 +81,16 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "hello.wsgi.application"
-AUTH_USER_MODEL = "user.CustomUser"
+AUTH_USER_MODEL = "backend.CustomUser"
 
 REST_FRAMEWORK = {'DEFAULT_PERMISSION_CLASSES': [
             'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
                 ]
 }
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://localhost:8000",
+]
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
@@ -86,11 +98,11 @@ REST_FRAMEWORK = {'DEFAULT_PERMISSION_CLASSES': [
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "realdb",
-        "POST": "5432",
-        "USER": "realUser",
-        "Host": "*",
-        "PASSWORD": "realdb5432",
+        "NAME": "unreal", #postgres
+        "PORT": "5432",
+        "USER": "here", #postgres
+        "Host": "localhost",
+        "PASSWORD": "larrymax",
     }
 }
 
