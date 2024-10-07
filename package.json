@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@heroicons/react": "^2.1.5",
     "lucide-react": "^0.446.0"
   }
 }
