@@ -24,15 +24,12 @@
 }
 
 .card button {
-    background-color: #0070f3;
-    color: white;
+    background-color: #bdb0c7;
+    color: black;
+    font-weight: bold;
     border: none;
     padding: 10px 20px;
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.2s;
-}
-
-.card button:hover {
-    background-color: #005bb5;
 }
