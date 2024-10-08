@@ -1,7 +1,6 @@
-from rest_framework import serializers, viewsets, routers
+from rest_framework import serializers
 from django.contrib.auth import authenticate
 from .models import CustomUser,Payment,Property,CartItem,Cart,Property_Features
-from django.contrib.auth.models import Group
 
 class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
