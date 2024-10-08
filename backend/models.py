@@ -180,6 +180,7 @@ class Transaction(models.Model):
 
 class Order(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
+    # order_items = models.ManyToManyField(order)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

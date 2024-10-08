@@ -32,7 +32,7 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     # "grappelli",
-    "adminplus",
+    # "adminplus",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",

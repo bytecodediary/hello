@@ -2,3 +2,5 @@ node_modules
 backend/__pycache__/
 hello/__pycache__/
 backend/migrations/__pycache__/
+media/media/product_images/
+db.sqlite3
