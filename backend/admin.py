@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import CustomUser, Property, Cart, CartItem, Payment, Transaction, Order, Order_Item, Property_Features, Property_Lord, Image
+from .models import CustomUser, Property, Cart, CartItem, Payment, Transaction, Order, OrderItem, Property_Features, Property_Lord, Image, Client
 
 # class CustomUserAdmin(admin.ModelAdmin):
 #     list_display = ('first_name', 'last_name', 'email', 'username', 'user_type')
@@ -79,7 +79,8 @@ admin.site.register(CartItem)
 admin.site.register(Payment)
 admin.site.register(Transaction)
 admin.site.register(Order)
-admin.site.register(Order_Item)
+admin.site.register(OrderItem)
 admin.site.register(Property_Features)
 admin.site.register(Property_Lord)
 admin.site.register(Image)
+admin.site.register(Client)
