@@ -9,50 +9,46 @@ import {
 import Input from "../../Components/ui/Input";
 import Image from "next/image";
 import Link from "next/link";
-import Button from "../../Components/ui/Button";
-import Footerimg from"../../Public/Image/footerimg.png"
-import "./footer.css"
-
+import { Button } from "../../Components/ui/Button";
+import Footerimg from "../../Public/Image/footerimg.png";
+import "./footer.css";
 
 export default function Footer() {
   return (
     <footer className=" relative flex flex-row	">
-        <div className=" topper rounded-lg mb-8 flex flex-col md:flex-row items-center absolute">
-          <Image
-            src={Footerimg}
-            alt="Tinted house with a blue roof"
-            width={400}
-            height={400}
-            className="mb-4 md:mb-0 md:mr-8"
-          />
-          <div className="text-white text-center md:textF-left">
-            <h2 className="text-2xl font-bold mb-2">
-              Subscribe to our newsletter to get updates to our latest
-              collections
-            </h2>
-            <p className="mb-4">
-              Get 20% off on your first order just by subscribing to our
-              newsletter
-            </p>
-            <form className="flex flex-col sm:flex-row gap-2">
-              <Input
-                type="email" // Use "email" in lowercase
-                placeholder="Enter your email"
-                className="bg-white text-black"
-                required
-              />
-              <Button
-                label="Email Us"
-                variant="primary"
-                onClick={() => console.log("Email Received")}
-              />
-            </form>
-            <p className="text-sm mt-2">
-              You will be able to unsubscribe at any time. Read our privacy
-              policy here.
-            </p>
-          </div>
+      <div className=" topper rounded-lg mb-8 flex flex-col md:flex-row items-center absolute">
+        <Image
+          src={Footerimg}
+          alt="Tinted house with a blue roof"
+          width={400}
+          height={400}
+          className="mb-4 md:mb-0 md:mr-8"
+        />
+        <div className="text-white text-center md:textF-left">
+          <h2 className="text-2xl font-bold mb-2">
+            Subscribe to our newsletter to get updates to our latest collections
+          </h2>
+          <p className="mb-4">
+            Get 20% off on your first order just by subscribing to our
+            newsletter
+          </p>
+          <form className="flex flex-col sm:flex-row gap-2">
+            <Input
+              type="email"
+              placeholder="Enter your email"
+              className="bg-white text-black"
+              required
+            />
+            <Button variant="primary" size="lg">
+              Email us
+            </Button>
+          </form>
+          <p className="text-sm mt-2">
+            You will be able to unsubscribe at any time. Read our privacy policy
+            here.
+          </p>
         </div>
+      </div>
       <div className=" lower container mx-auto px-4 py-8 bg-white ">
         <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
           <div className="col-span-1 md:col-span-2">

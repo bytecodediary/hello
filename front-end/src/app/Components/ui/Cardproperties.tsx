@@ -1,5 +1,5 @@
 import { Star } from "lucide-react";
-import Button from "./Button";
+import { Button } from "./Button";
 import { Card1, CardContent, CardFooter, CardHeader, CardTitle } from "./Card";
 import Image from "next/image";
 
@@ -87,12 +87,12 @@ export default function CardProperties() {
           <div className="flex">
             <div>
               <Image
-              src={property.imageUrl}
-              alt={property.name}
-              className="h-48 w-full object-cover"
-              width={300}
-              height={200}
-            />
+                src={property.imageUrl}
+                alt={property.name}
+                className="h-48 w-full object-cover"
+                width={300}
+                height={200}
+              />
             </div>
             <div>
               <CardHeader>
@@ -128,11 +128,9 @@ export default function CardProperties() {
               <p className="font-bold">{property.price}</p>
               <p className="text-sm ">{property.priceUnit}</p>
             </div>
-            <Button
-              label="Contact Stakeholder"
-              variant="primary"
-              onClick={() => console.log("List property clicked")}
-            />
+            <Button variant="primary" size="lg">
+              Contact Stakeholder
+            </Button>
           </CardFooter>
         </Card1>
       ))}

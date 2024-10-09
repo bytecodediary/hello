@@ -6,9 +6,8 @@ import Heroimg from "./Public/Image/herohouse.png";
 import Homeservice from "./Components/ui/Homeservice";
 import { ChevronDown } from "lucide-react";
 import "./style/Homeservice.css";
-import Button from "./Components/ui/Button";
+import { Button } from "@/app/Components/ui/Button";
 import Footer from "./Components/Layouts/Footer";
-import CardProperties from "./Components/ui/Cardproperties";
 
 export default function Home() {
   return (
@@ -25,16 +24,12 @@ export default function Home() {
               solutions, connecting customers and stakeholders.
             </p>
             <div className="flex space-x-4">
-              <Button
-                label="Start exploring"
-                variant="primary"
-                onClick={() => console.log("Start exploring clicked")}
-              />
-              <Button
-                label="List property"
-                variant="secondary"
-                onClick={() => console.log("List property clicked")}
-              />
+              <Button variant="primary" size="lg">
+                Start exploring
+              </Button>
+              <Button variant="secondary" size="lg">
+                List property
+              </Button>
             </div>
           </div>
           <div className="hero-right flex-1">
@@ -74,7 +69,7 @@ export default function Home() {
         </div>
       </div>
       <Homeservice />
-      
+
       <Footer />
     </div>
   );
