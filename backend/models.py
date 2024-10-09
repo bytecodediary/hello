@@ -81,12 +81,6 @@ class Property_Lord(models.Model):
     def __str__(self):
         return self.phone_number.as_e164 # displays in international format
 
-class Image(models.Model):
-    image = models.ImageField(upload_to="media/product_images")
-    image_alt = models.TextField()
-    
-    def __str__(self):
-        return self.image_alt
 
 class Property(models.Model):
     status_choices =(
@@ -104,7 +98,7 @@ class Property(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     price = models.IntegerField()
     slug = models.SlugField(unique=True, blank=True)
-    image = models.ForeignKey(Image, on_delete=models.CASCADE)
+    
 
     def __str__(self):
         return self.title
@@ -113,6 +107,15 @@ class Property(models.Model):
         if not self.slug:
             self.slug = generate_unique_slug()
         super().save(*args, **kwargs)
+
+class Image(models.Model):
+    image = models.ImageField(upload_to="media/product_images")
+    image_alt = models.TextField()
+    property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name="images")
+    
+    def __str__(self):
+        return self.image_alt
+
         
 class Property_Features(models.Model):
     property = models.ForeignKey(Property, on_delete=models.CASCADE)
