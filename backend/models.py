@@ -1,7 +1,6 @@
 from django.db import models
-from django.contrib.auth.models import User, PermissionsMixin, BaseUserManager, AbstractBaseUser
+from django.contrib.auth.models import PermissionsMixin, BaseUserManager, AbstractBaseUser
 from django.forms import ValidationError
-from django.utils import timezone
 import datetime
 from django.core.validators import MaxValueValidator, MinValueValidator
 
@@ -35,6 +34,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     is_pending_type_change = models.BooleanField(default=False)
+    date_joined = models.DateTimeField(auto_now_add=True)
 
     objects = CustomUserManager()
 
@@ -113,7 +113,7 @@ class Cart(models.Model):
     cart_items = models.ManyToManyField(CartItem)
     slug = models.SlugField()
         
-    def total_price(self):
+    def __str__(self):
         return f"{self.price} x {self.product_amount} in the cart"
 
 class Payment(models.Model):
@@ -141,9 +141,6 @@ class Notification(models.Model):
 
     def __str__(self):
         return self.message[:50]
-    
-    def is_read(self):
-        return self.is_read == False
 
 class client(models.Model):
     tenant = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
@@ -152,22 +149,24 @@ class client(models.Model):
     def __str__(self):
         return self.tenant.username
     
-def validate_years(request):
-    dob = Agent.objects.filter(Dob=dob, user=request.user)
-    time_now = datetime.now()
-    t22_years = time_now - datetime.timedelta(days=22*365.25)
-    if dob < t22_years:
-        return ValidationError(request, "Age is below 22 years")
-    return dob
+
 
 class Agent(models.Model):
     name = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    Dob = models.DateTimeField(default=validate_years)
+    Dob = models.DateTimeField()
     is_available = models.BooleanField(default=True)
     listings = models.ManyToManyField(Property)
 
     def __str__(self):
         return self.Dob
+    
+    def validate_years(request, Dob):
+        dob = Agent.objects.filter(dob=Dob, user=request.user)
+        time_now = datetime.now()
+        t22_years = time_now - datetime.timedelta(days=22*365.25)
+        if dob < t22_years:
+            return ValidationError(request, "Age is below 22 years")
+        return dob
     
 class Transaction(models.Model):
     amount = models.IntegerField(default=0)
@@ -181,6 +180,7 @@ class Transaction(models.Model):
 
 class Order(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
+    # order_items = models.ManyToManyField(order)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
