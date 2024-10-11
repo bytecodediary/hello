@@ -23,7 +23,7 @@ class ChangeUserTypeView(generics.UpdateAPIView):
 class UserRegistrationView(generics.CreateAPIView):
     queryset = CustomUser.objects.all()
     serializer_class =CustomUserSerializer
-    permission_classes[permissions.AllowAny]
+    permission_classes = [permissions.AllowAny]
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)

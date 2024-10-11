@@ -45,7 +45,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "django_filters",
     # added simplejwt for jason web token
-    "rest_framework_simplejwt"
+    "rest_framework_simplejwt",
     # "django_guardians",
     "corsheaders"
 ]
