@@ -17,8 +17,8 @@ The **Real Estate System** is a web application designed to streamline the manag
   
 ## Technologies Used
 
-- **Backend**: Django (filters, rest_framework, guardians)
-- **Frontend**: JavaScript (React)
+- **Backend**: Django (filters, rest_framework, )
+- **Frontend**: JavaScript (React, nextjs)
 - **Database**: PostgreSQL
 - **Authentication**: JWT / OAuth for secure login and user management
 - **Deployment**: Docker, Nginx, and Gunicorn for scalable production deployment
@@ -39,7 +39,7 @@ The **Real Estate System** is a web application designed to streamline the manag
     ```
     pip install -r requirements.txt
     ```
-
+    
 4. Set up your environment variables (e.g., database credentials, secret keys).
 
 5. Run the development server:
@@ -48,6 +48,99 @@ The **Real Estate System** is a web application designed to streamline the manag
     ```
 
 6. Access the application at `http://localhost:8000`.
+```markdown
+# PostgreSQL Setup
+
+This section provides instructions on how to set up PostgreSQL for this project.
+
+## Prerequisites
+
+Before you begin, ensure you have the following installed on your machine:
+
+- [PostgreSQL](https://www.postgresql.org/download/) (version X.X or higher)
+- [pgAdmin](https://www.pgadmin.org/download/) (optional, for GUI management)
+- [Node.js](https://nodejs.org/) (if your project requires it)
+
+## Installation
+
+### Step 1: Install PostgreSQL
+
+1. Download the PostgreSQL installer for your operating system from the [official website](https://www.postgresql.org/download/).
+2. Run the installer and follow the prompts to complete the installation.
+3. During installation, you will be prompted to set a password for the default `postgres` user. Make sure to remember this password.
+
+### Step 2: Start PostgreSQL Service
+
+- **On Windows:**
+  - PostgreSQL should start automatically. If not, you can start it from the Services application.
+  
+- **On macOS:**
+  ```bash
+  brew services start postgresql
+  ```
+
+- **On Linux:**
+  ```bash
+  sudo systemctl start postgresql
+  ```
+  or
+  ``` bash
+  sudo service postgresql start
+  ```
+### Step 3: Create a Database
+
+1. Open the PostgreSQL command line interface (CLI) or pgAdmin.
+2. Connect to the PostgreSQL server using the `postgres` user:
+   ```bash
+   psql -U postgres
+   ```
+   Enter the password you set during installation.
+
+3. Create a new database for your project:
+   ```sql
+   CREATE DATABASE your_database_name;
+   ```
+
+4. (Optional) Create a new user with access to the database:
+   ```sql
+   CREATE USER your_username WITH PASSWORD 'your_password';
+   GRANT ALL PRIVILEGES ON DATABASE your_database_name TO your_username;
+   ```
+
+### Step 4: Configure Database Connection
+
+Update your project's configuration file (e.g., `.env`, `config.js`, etc.) with the database connection details:
+
+```plaintext
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=your_database_name
+DB_USER=your_username
+DB_PASSWORD=your_password
+```
+
+### Step 5: Run Migrations (if applicable)
+
+If your project uses migrations, run them to set up the database schema:
+
+```bash
+# Example command, adjust based on your setup
+npm run migrate
+```
+
+## Troubleshooting
+
+- If you encounter issues connecting to the database, ensure that the PostgreSQL service is running and that you are using the correct credentials.
+- Check the PostgreSQL logs for any error messages that can help diagnose the problem.
+
+## Additional Resources
+
+- [PostgreSQL Documentation](https://www.postgresql.org/docs/)
+- [pgAdmin Documentation](https://www.pgadmin.org/docs/)
+
+```
+
+Feel free to modify the instructions to better fit your project's needs, such as adding specific commands or configurations that are relevant to your application.
 
 ## Contributing
 
