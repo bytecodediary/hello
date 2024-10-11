@@ -110,7 +110,7 @@ Before you begin, ensure you have the following installed on your machine:
 
 ### Step 4: Configure Database Connection
 
-Update your project's configuration file (e.g., `.env`, `config.js`, etc.) with the database connection details:
+Update your project's configuration file (e.g .env, but mostly settings.py in development environment) with the database connection details:
 
 ```plaintext
 DB_HOST=localhost
