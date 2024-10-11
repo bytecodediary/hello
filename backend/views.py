@@ -4,10 +4,10 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login
 from django.contrib.auth.models import User
 # from django import messages
-from .serializers import CustomUserSerializer, ChangeUserTypeSerializer,LoginSerializer,PropertySerializer,CartSerializer, CartItemSerializer
-from .serializers import OwnerSerializer
+from .serializers import CustomUserSerializer, ChangeUserTypeSerializer,LoginSerializer,PropertySerializer,CartSerializer, CartItemSerializer, ClientSerializer
+from .serializers import OwnerSerializer, NotificationSerializer, TransactionSerializer, PaymentSerializer, OrderSerializer, OrderItemSerializer,AgentSerializer
 from rest_framework import status, generics, permissions
-from .models import CustomUser, Property, Cart, CartItem
+from .models import CustomUser, Property, Cart, CartItem, Client, Agent, Owner, Notification, Transaction, Payment, Order, OrderItem
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from.filters import PropertyFilter
@@ -100,6 +100,9 @@ class CartDeleteItemView(generics.DestroyAPIView):
         item = self.get_object()
         object.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+class OwnerProfileView(generics.GenericAPIView):
+    queryset = Owner.objects.all()
 
 
 

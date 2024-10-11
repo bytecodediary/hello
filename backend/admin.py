@@ -32,22 +32,22 @@ class CartItemAdmin(admin.ModelAdmin):
     ordering = ('-property__title',)
 
 class PaymentAdmin(admin.ModelAdmin):
-    list_display = ('price', 'transaction_type', 'description', 'added_at')
-    list_filter = ('transaction_type', 'price', 'added_at')
-    search_fields = ('amount', 'added_at')
+    list_display = ('price', 'payment_mode', 'description', 'added_at')
+    list_filter = ('payment_mode', 'price', 'added_at')
+    search_fields = ('amount', 'order__status', 'added_at')
     ordering = ('-added_at',)
 
-# class TransactionAdmin(admin.ModelAdmin):
-#     list_display = ('user', 'payment', 'transaction_desc', 'date_paid')#payment_mode
-#     list_filter = ( 'date_paid') #payment_mode
-#     search_fields = ( 'date_paid') #payment_mode
-#     ordering = ('-date_paid',)
+class TransactionAdmin(admin.ModelAdmin):
+    list_display = ('payment', 'transaction_desc',  'transaction_type')
+    list_filter = ( 'date_paid', 'transaction_type')
+    search_fields = ( 'date_paid', 'transaction_type') 
+    ordering = ('-date_paid',)
 
-# class OrderAdmin(admin.ModelAdmin):
-#     list_display = ('user',  'status', 'created_at') #'payment'
-#     list_filter = ('user__username', 'status', 'created_at') #'payment__mode'
-#     search_fields = ('user__username',  'status', 'created_at') #'payment__mode'
-#     ordering = ('-created_at',)
+class OrderAdmin(admin.ModelAdmin):
+    list_display = ('user',  'status', 'created_at') #'payment'
+    list_filter = ('user__username', 'status', 'created_at') #'payment__mode'
+    search_fields = ('user__username',  'status', 'created_at') #'payment__mode'
+    ordering = ('-created_at',)
 
 class OrderItemAdmin(admin.ModelAdmin):
     list_display = ('order', 'property', 'quantity')
@@ -68,18 +68,22 @@ class OwnerAdmin(admin.ModelAdmin):
     ordering = ('-name',)
 
 class ImageAdmin(admin.ModelAdmin):
-    list_display = ('image_alt')
+    list_display = ('image_alt',)
 
+class ClientAdmin(admin.ModelAdmin):
+    list_display = ('customer', 'dob', 'phone_number', 'has_paid')
+    list_filter = ('customer__username', 'phone_number' )
+    ordering = ('-customer__username',)
 
 admin.site.register(CustomUser, CustomUserAdmin)
 admin.site.register(Property, PropertyAdmin )
 admin.site.register(Cart, CartAdmin)
 admin.site.register(CartItem, CartItemAdmin)
 admin.site.register(Payment, PaymentAdmin)
-admin.site.register(Transaction,)
-admin.site.register(Order,)
+admin.site.register(Transaction, TransactionAdmin)
+admin.site.register(Order, OrderAdmin)
 admin.site.register(OrderItem, OrderItemAdmin)
 admin.site.register(PropertyFeature, PropertyFeatureAdmin)
 admin.site.register(Owner, OwnerAdmin)
-admin.site.register(Image)
-admin.site.register(Client)
+admin.site.register(Image, ImageAdmin)
+admin.site.register(Client, ClientAdmin)

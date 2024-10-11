@@ -103,14 +103,6 @@ class Property(models.Model):
         verbose_name = 'Property'
         verbose_name_plural = 'Properties'
 
-class Owner(models.Model):
-    name = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    phone_number = PhoneNumberField(null=False, blank=False, unique=True)
-    properties = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='owned_properties')
-
-    def __str__(self):
-        return self.phone_number.as_e164 # displays in international format
-
 class Image(models.Model):
     image = models.ImageField(upload_to="media/product_images")
     image_alt = models.TextField()
@@ -126,6 +118,40 @@ class PropertyFeature(models.Model):
 
     def __str__(self):
         return self.feature_name
+
+class Owner(models.Model):
+    name = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='owners')
+    phone_number = PhoneNumberField(null=False, blank=False, unique=True)
+    properties = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='owned_properties')
+
+    def __str__(self):
+        return self.phone_number.as_e164 # displays in international format
+
+class Client(models.Model):
+    customer = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='clients', default='')
+    phone_number = PhoneNumberField(unique=True, blank=False, null=False, default="+25470000000")
+    dob = models.DateTimeField()
+    has_paid = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.phone_number.as_e164 
+    
+class Agent(models.Model):
+    name = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='agents')
+    dob = models.DateTimeField()
+    is_available = models.BooleanField(default=True)
+    listings = models.ManyToManyField(Property)
+    phone_number = PhoneNumberField(unique=True, blank=True, null=True)
+
+    def __str__(self):
+        return self.phone_number.as_e164
+    
+    def validate_years(self):
+        time_now = datetime.now()
+        t22_years = time_now - datetime.timedelta(days=22*365.25)
+        if self.dob < t22_years:
+            return ValidationError("Age is below 22 years")
+        return self.dob
  
 class Cart(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
@@ -150,89 +176,18 @@ class CartItem(models.Model):
 
     def __str__(self):
         return self.user.username
-
-class Payment(models.Model):
-    Transaction_types = (
-    ('paid', 'paid'),
-    ('refunded', 'refunded'),
-    ('adjusted', 'adjusted')
-    )
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    price = models.DecimalField(decimal_places=2, max_digits=10)
-    transaction_type = models.CharField(max_length=50, choices=Transaction_types)
-    description = models.CharField(max_length=255)
-    added_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    slug = models.SlugField(unique=True, blank=True)
-
-    def __str__(self):
-        return f"{self.transaction_type} by {self.user.username}"
     
-    def save(self, *args, **kwargs):
-        if not self.slug: 
-            self.slug = generate_unique_slug()
-        super().save(*args, **kwargs)
-
-class Transaction(models.Model):
-    amount = models.IntegerField(default=0)
-    date_paid = models.DateTimeField(auto_now=True)
-    transaction_desc = models.CharField(max_length=200)
-    slug = models.SlugField(unique=True, blank=True)
-    payment = models.ForeignKey(Payment, on_delete=models.CASCADE, related_name="transactions")
-
-    def __str__(self):
-        return self.user.username
-    
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = generate_unique_slug()
-        super().save(*args, **kwargs)
-
-class Notification(models.Model):
-    message = models.CharField(max_length=200)
-    is_read = models.BooleanField(default=False)
-    received_at = models.DateTimeField(auto_now_add=True)
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return self.message[:50]
-
-class Client(models.Model):
-    tenant = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    phone_number = PhoneNumberField(unique=True, blank=False, null=False, default="+25470000000")
-    has_paid = models.BooleanField(default=False)
-
-    def __str__(self):
-        return self.phone_number.as_e164
-
-    
-class Agent(models.Model):
-    name = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    dob = models.DateTimeField()
-    is_available = models.BooleanField(default=True)
-    listings = models.ManyToManyField(Property)
-    phone_number = PhoneNumberField(unique=True, blank=True, null=True)
-
-    def __str__(self):
-        return self.phone_number.as_e164
-    
-    def validate_years(self):
-        time_now = datetime.now()
-        t22_years = time_now - datetime.timedelta(days=22*365.25)
-        if self.dob < t22_years:
-            return ValidationError("Age is below 22 years")
-        return self.dob
-    
-order_status = (
+class Order(models.Model):
+    order_status = (
     ('delivered', 'Delivered'),
     ('returned', 'Returned'),
-    ('')
-)
+    ('pending', 'pending'),
+    )
 
-class Order(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name="order")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    status = models.CharField(choices=order_status, default='pending', max_length=50)
     slug = models.SlugField(blank=True, unique=True)
 
     def __str__(self):
@@ -256,3 +211,72 @@ class OrderItem(models.Model):
         if not self.save:
             self.slug = generate_unique_slug()
         super().save(*args, **kwargs)
+
+
+class Payment(models.Model):
+    PaymentModes = (
+    ('bank', 'Bank'),
+    ('mpesa', 'Mpesa'),
+    ('paypal', 'Paypal'),
+    ('stripe', 'stripe'),
+    )
+
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='orders', default='')
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='user_payments')
+    price = models.DecimalField(decimal_places=2, max_digits=10)
+    payment_mode = models.CharField(max_length=30, choices=PaymentModes, default='mpesa')
+    description = models.CharField(max_length=255)
+    added_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    slug = models.SlugField(unique=True, blank=True)
+
+    def __str__(self):
+        return f"{self.payment_mode} by {self.user.username}"
+    
+    def save(self, *args, **kwargs):
+        if not self.slug: 
+            self.slug = generate_unique_slug()
+        super().save(*args, **kwargs)
+
+class Transaction(models.Model):
+    Status_Types = (
+        ('paid', 'paid'),
+        ('refunded', 'refunded'),
+        ('failed', 'failed'),
+        ('unsettled', 'unsettled')
+    )
+
+    TRANSACTION_TYPE_CHOICES = [
+        ('payment', 'Payment'),
+        ('refund', 'Refund'),
+        ('authorization', 'Authorization'),
+        ('chargeback', 'Chargeback'),
+        ('adjustment', 'Adjustment'),
+        ('payout', 'Payout'),
+    ]
+
+    amount = models.IntegerField(default=0)
+    date_paid = models.DateTimeField(auto_now=True)
+    transaction_desc = models.CharField(max_length=200)
+    slug = models.SlugField(unique=True, blank=True)
+    payment = models.ForeignKey(Payment, on_delete=models.CASCADE, related_name="transactions")
+    status = models.CharField(max_length=50, choices=Status_Types, default='unsettled')
+    transaction_type = models.CharField(max_length=200, choices=TRANSACTION_TYPE_CHOICES, default='')
+
+    def __str__(self):
+        return self.user.username
+    
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = generate_unique_slug()
+        super().save(*args, **kwargs)
+
+class Notification(models.Model):
+    message = models.CharField(max_length=200)
+    is_read = models.BooleanField(default=False)
+    received_at = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.message[:50]
+
