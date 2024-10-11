@@ -221,8 +221,6 @@ class Agent(models.Model):
             return ValidationError("Age is below 22 years")
         return self.dob
 
-
-
 class Order(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name="order")
     created_at = models.DateTimeField(auto_now_add=True)
