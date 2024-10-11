@@ -74,19 +74,6 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return self.email
 
-class Property_Lord(models.Model):
-    name = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    phone_number = PhoneNumberField(null=False, blank=False, unique=True)
-
-    def __str__(self):
-        return self.phone_number.as_e164 # displays in international format
-
-class Image(models.Model):
-    image = models.ImageField(upload_to="media/product_images")
-    image_alt = models.TextField()
-    
-    def __str__(self):
-        return self.image_alt
 
 class Property(models.Model):
     status_choices =(
@@ -94,7 +81,6 @@ class Property(models.Model):
     ("pending", "Pending"),
     ("available", "Available"),
     )
-    landlord = models.ForeignKey(Property_Lord, on_delete=models.CASCADE)
     title = models.CharField(max_length=50)
     description = models.TextField()
     city = models.CharField(max_length=50)
@@ -104,7 +90,7 @@ class Property(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     price = models.IntegerField()
     slug = models.SlugField(unique=True, blank=True)
-    image = models.ForeignKey(Image, on_delete=models.CASCADE)
+    
 
     def __str__(self):
         return self.title
@@ -113,7 +99,23 @@ class Property(models.Model):
         if not self.slug:
             self.slug = generate_unique_slug()
         super().save(*args, **kwargs)
-        
+
+class Owner(models.Model):
+    name = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    phone_number = PhoneNumberField(null=False, blank=False, unique=True)
+    properties = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='owned_properties')
+
+    def __str__(self):
+        return self.phone_number.as_e164 # displays in international format
+
+class Image(models.Model):
+    image = models.ImageField(upload_to="media/product_images")
+    image_alt = models.TextField()
+    property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name="images")
+    
+    def __str__(self):
+        return self.image_alt
+       
 class Property_Features(models.Model):
     property = models.ForeignKey(Property, on_delete=models.CASCADE)
     feature_name = models.CharField(max_length=200)
@@ -122,8 +124,6 @@ class Property_Features(models.Model):
     def __str__(self):
         return self.feature_name
  
-
-
 class Cart(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
     slug = models.SlugField(unique=True, blank=True)
@@ -199,7 +199,8 @@ class Client(models.Model):
     has_paid = models.BooleanField(default=False)
 
     def __str__(self):
-        return self.tenant.username
+        return self.phone_number.as_e164
+
     
 class Agent(models.Model):
     name = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
@@ -209,7 +210,7 @@ class Agent(models.Model):
     phone_number = PhoneNumberField(unique=True, blank=True, null=True)
 
     def __str__(self):
-        return self.Dob
+        return self.phone_number.as_e164
     
     def validate_years(self):
         time_now = datetime.now()
@@ -217,8 +218,6 @@ class Agent(models.Model):
         if self.dob < t22_years:
             return ValidationError("Age is below 22 years")
         return self.dob
-
-
 
 class Order(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name="order")
