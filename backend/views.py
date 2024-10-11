@@ -1,9 +1,4 @@
-from django.shortcuts import render
 from .models import Property
-from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth import login
-from django.contrib.auth.models import User
-# from django import messages
 from .serializers import CustomUserSerializer, ChangeUserTypeSerializer,LoginSerializer,PropertySerializer,CartSerializer, CartItemSerializer, ClientSerializer
 from .serializers import OwnerSerializer, NotificationSerializer, TransactionSerializer, PaymentSerializer, OrderSerializer, OrderItemSerializer,AgentSerializer
 from rest_framework import status, generics, permissions
@@ -95,15 +90,36 @@ class CartUpdateItemView(generics.UpdateAPIView):
 
 class CartDeleteItemView(generics.DestroyAPIView):
     queryset = CartItem.objects.all()
+    lookup_field = 'slug'
 
     def destroy(self, request, *args, **kwargs):
         item = self.get_object()
-        object.delete()
+        item.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-class OwnerProfileView(generics.GenericAPIView):
-    queryset = Owner.objects.all()
+class AgentProfileView(generics.GenericAPIView):
+    queryset = Agent.objects.all()
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = AgentSerializer
 
+    def get_objects(self):
+        return self.request.user.agent
+
+class ClientProfileView(generics.GenericAPIView):
+    queryset = Client.objects.all()
+    permission_classes =[permissions.IsAuthenticated]
+    serializer_class = ClientSerializer
+
+    def get_objects(self):
+        return self.request.user.customer
+    
+class OwnerProfileView(generics.GenericAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    queryset = Owner.objects.all()
+    serializer_class = OwnerSerializer
+
+    def get_objects(self):
+        return self.request.user.owner
 
 
 

@@ -1,6 +1,11 @@
 from django.contrib import admin
 from .models import CustomUser, Property, Cart, CartItem, Payment, Transaction, Order, OrderItem, PropertyFeature, Owner, Image, Client
 
+# customizing the admin interface title and everything
+admin.site.site_header = 'house admin'
+admin.site.site_title = 'admin panel'
+admin.site.index_title = 'welcome to the house admin home'
+
 class CustomUserAdmin(admin.ModelAdmin):
     list_display = ('first_name', 'last_name', 'email', 'username', 'user_type')
     list_filter = ('user_type', 'date_joined', )
@@ -62,10 +67,10 @@ class PropertyFeatureAdmin(admin.ModelAdmin):
     ordering = ('-feature_name',)
 
 class OwnerAdmin(admin.ModelAdmin):
-    list_display = ('name', 'phone_number', 'properties')
-    list_filter = ('name', 'phone_number')
-    search_fields = ('name', 'phone_number')
-    ordering = ('-name',)
+    list_display = ('owner', 'phone_number', 'properties')
+    list_filter = ('owner', 'phone_number')
+    search_fields = ('owner', 'phone_number')
+    ordering = ('-owner',)
 
 class ImageAdmin(admin.ModelAdmin):
     list_display = ('image_alt',)

@@ -1,3 +1,4 @@
+import uuid
 from django.db import models
 from django.contrib.auth.models import PermissionsMixin, BaseUserManager, AbstractBaseUser
 from django.forms import ValidationError
@@ -23,7 +24,8 @@ def slug_in_any_model(slug):
         Property.objects.filter(slug=slug).exists() or
         Payment.objects.filter(slug=slug).exists() or 
         Transaction.objects.filter(slug=slug).exists() or
-        OrderItem.objects.filter(slug=slug).exists()
+        OrderItem.objects.filter(slug=slug).exists() or
+        CartItem.objects.filter(slug=slug).exists()
     )
 
 class CustomUserManager(BaseUserManager):
@@ -48,6 +50,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         ('agent', 'agent'),
         ('proplord', 'property_lord'),
     )
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     email = models.EmailField(unique=True)
     username = models.CharField(max_length=50, unique=True)
     first_name = models.CharField(max_length=50)
@@ -120,7 +123,7 @@ class PropertyFeature(models.Model):
         return self.feature_name
 
 class Owner(models.Model):
-    name = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='owners')
+    owner = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='owners')
     phone_number = PhoneNumberField(null=False, blank=False, unique=True)
     properties = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='owned_properties')
 
@@ -137,7 +140,7 @@ class Client(models.Model):
         return self.phone_number.as_e164 
     
 class Agent(models.Model):
-    name = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='agents')
+    agent = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='agents')
     dob = models.DateTimeField()
     is_available = models.BooleanField(default=True)
     listings = models.ManyToManyField(Property)
@@ -173,9 +176,15 @@ class CartItem(models.Model):
     property = models.ForeignKey(Property, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="order_items")
+    slug = models.SlugField(unique=True, blank=True)
 
     def __str__(self):
         return self.user.username
+    
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = generate_unique_slug()
+        super().save(*args, **kwargs)
     
 class Order(models.Model):
     order_status = (
