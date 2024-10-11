@@ -3,15 +3,18 @@ from django.contrib.auth import authenticate
 from .models import CustomUser,Payment,Property,CartItem,Cart,PropertyFeature, Order, OrderItem, Agent, Image, Client, Owner, Transaction, Notification
 
 class CustomUserSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
+
     class Meta:
         model = CustomUser
-        fields = ['url', 'username', 'first_name', 'email', 'last_name']
+        fields = ['url', 'username',  'email', 'password']
+        read_only_fields = ['url', 'username',  'email', 'password']
 
-        def create(self, **validated_data):
-            user = CustomUser(**validated_data)
-            user.set_password(validated_data['password'])
-            user.save()
-            return user
+    def create(self, validated_data):
+        user = CustomUser(**validated_data)
+        user.set_password(validated_data['password'])
+        user.save()
+        return user
 
 class ChangeUserTypeSerializer(serializers.ModelSerializer):
     new_user_type = serializers.ChoiceField(choices=CustomUser.USER_TYPES)
@@ -22,6 +25,7 @@ class ChangeUserTypeSerializer(serializers.ModelSerializer):
     
     def update(self, instance, validated_data):
         new_user_type = validated_data['new_user_type']
+        
         instance.apply_for_type_change(new_user_type)
         return instance
 
