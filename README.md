@@ -48,6 +48,7 @@ The **Real Estate System** is a web application designed to streamline the manag
     ```
 
 6. Access the application at `http://localhost:8000`.
+Additionally, you'll need the following setup
 ```markdown
 # PostgreSQL Setup
 
@@ -119,9 +120,9 @@ DB_USER=your_username
 DB_PASSWORD=your_password
 ```
 
-### Step 5: Run Migrations (if applicable)
+### Step 5: Run Migrations
 
-If your project uses migrations, run them to set up the database schema:
+Run the migrations to set up the database schema:
 
 ```bash
 # Example command, adjust based on your setup
@@ -140,8 +141,7 @@ npm run migrate
 
 ```
 
-Feel free to modify the instructions to better fit your project's needs, such as adding specific commands or configurations that are relevant to your application.
-
+Feel free to modify the instructions to better fit your project's needs.
 ## Contributing
 
 We welcome contributions! If you'd like to contribute, please fork the repository and submit a pull request with your changes. Be sure to update documentation as needed.
