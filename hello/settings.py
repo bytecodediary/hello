@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "django_filters",
     # added simplejwt for jason web token
-    "rest_framework_simplejwt.token_blacklist"
+    # "rest_framework_simplejwt.token_blacklist"
     # "django_guardians",
     "corsheaders"
 ]
@@ -109,19 +109,9 @@ CSRF_TRUSTED_ORIGINS = [
 # }
 
 DATABASES = {
-<<<<<<< HEAD
-    "default": {
-        "ENGINE": "django.db.backends.mysql",
-        "NAME": "unreal", #postgres
-        "PORT": "5432",
-        "USER": "here", #postgres
-        "Host": "localhost",
-        "PASSWORD": "larrymax",
-=======
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
->>>>>>> 88c3b212e495d4754c793dd8fbccad8ead997ca8
     }
 }
 

@@ -61,7 +61,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     objects = CustomUserManager()
 
     USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = ['first_name', 'last_name', 'username']
+    REQUIRED_FIELDS = ['username']
 
     def apply_for_type_change(self,  new_type):
         if new_type in dict(self.USER_TYPES).keys():

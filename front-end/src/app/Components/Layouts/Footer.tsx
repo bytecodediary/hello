@@ -19,7 +19,7 @@ export default function Footer() {
       <div className=" topper rounded-lg mb-8 flex flex-col md:flex-row items-center absolute">
         <Image
           src={Footerimg}
-          alt="Tinted house with a blue roof"
+          alt="Tinted house with a blue roof over a cyliner"
           width={400}
           height={400}
           className="mb-4 md:mb-0 md:mr-8"

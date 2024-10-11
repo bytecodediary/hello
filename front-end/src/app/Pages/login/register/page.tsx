@@ -10,32 +10,49 @@ import { registerUser } from "@/app/action/registeruser";
 
 export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
+  const [message, setMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
-  const handleSubmit = async (formData: FormData) => {
+  // Create state variables for form fields
+  const [username, setUsername] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [confirmPassword, setConfirmPassword] = useState<string>("");
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault(); // Prevent default form submission
     setIsLoading(true);
-    setMessage("");
-    setError("");
+    setMessage(null);
+    setError(null);
 
-    const password = formData.get("password") as string;
-    const confirmPassword = formData.get("confirmPassword") as string;
-
+    // Password match validation
     if (password !== confirmPassword) {
       setError("Passwords do not match");
       setIsLoading(false);
       return;
     }
 
+    // Prepare user data to send to the API
+    const userData = { username, email, password };
+
     try {
-      const result = await registerUser(formData);
-      setMessage(result.message);
-      setTimeout(() => router.push("/"), 2000);
-    } catch (error) {
-      setError("An error occurred during registration");
+      const result = await registerUser(FormData); // Pass the FormData object
+      setMessage(result.message); // Show success message
+      setTimeout(() => {
+        router.push("/login");
+      }, 2000);
+    } catch (err: any) {
+      // Handle different types of errors
+      if (err.response && err.response.data) {
+        setError(
+          err.response.data.message || "Registration failed. Please try again."
+        );
+      } else {
+        setError("An unexpected error occurred.");
+      }
     } finally {
-      setIsLoading(false);
+      setIsLoading(false); // Stop loading indicator
     }
   };
 
@@ -45,18 +62,39 @@ export default function RegisterPage() {
         <h1 className="text-2xl font-bold text-center text-gray-900">
           Register
         </h1>
-        <form action={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Name</Label>
-            <Input id="name" name="name" type="text" required />
+            <Label htmlFor="username">Username</Label>
+            <Input
+              id="username"
+              name="username"
+              type="text"
+              required
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
-            <Input id="email" name="email" type="email" required />
+            <Input
+              id="email"
+              name="email"
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="password">Password</Label>
-            <Input id="password" name="password" type="password" required />
+            <Input
+              id="password"
+              name="password"
+              type="password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="confirmPassword">Confirm Password</Label>
@@ -65,6 +103,8 @@ export default function RegisterPage() {
               name="confirmPassword"
               type="password"
               required
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
             />
           </div>
           <Button type="submit" className="w-full" disabled={isLoading}>
