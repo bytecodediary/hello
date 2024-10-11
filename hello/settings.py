@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "django_filters",
     # added simplejwt for jason web token
-    "rest_framework_simplejwt.token_blacklist"
+    # "rest_framework_simplejwt.token_blacklist"
     # "django_guardians",
     "corsheaders"
 ]

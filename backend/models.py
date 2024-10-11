@@ -6,15 +6,15 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from phonenumber_field.modelfields import PhoneNumberField
 import string
 import random
+
 def generate_unique_slug():
     length = 24
     characters = string.ascii_lowercase + string.digits
 
-    slug = ''.join(random.choices(characters, k=length))
-
-    if slug_in_any_model():
-        slug = ''.join(random.choices(characters, k=length)) 
-    return slug
+    while True:
+        slug = ''.join(random.choices(characters, k=length))
+        if not slug_in_any_model(slug):
+            return slug  # Return the unique slug once found
 
 def slug_in_any_model(slug):
     return (
@@ -84,7 +84,7 @@ class Property(models.Model):
     title = models.CharField(max_length=50)
     description = models.TextField()
     city = models.CharField(max_length=50)
-    status = models.CharField(max_length=20, default=status_choices)
+    status = models.CharField(max_length=20, choices=status_choices, default='available')
     address = models.CharField(max_length=50)
     listed_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -99,6 +99,9 @@ class Property(models.Model):
         if not self.slug:
             self.slug = generate_unique_slug()
         super().save(*args, **kwargs)
+    class Meta:
+        verbose_name = 'Property'
+        verbose_name_plural = 'Properties'
 
 class Owner(models.Model):
     name = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
@@ -111,12 +114,12 @@ class Owner(models.Model):
 class Image(models.Model):
     image = models.ImageField(upload_to="media/product_images")
     image_alt = models.TextField()
-    property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name="images")
+    property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name="images", default='')
     
     def __str__(self):
         return self.image_alt
        
-class Property_Features(models.Model):
+class PropertyFeature(models.Model):
     property = models.ForeignKey(Property, on_delete=models.CASCADE)
     feature_name = models.CharField(max_length=200)
     feature_value = models.IntegerField(default=0, validators=[MinValueValidator(0), MaxValueValidator(100)])
@@ -127,6 +130,7 @@ class Property_Features(models.Model):
 class Cart(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
     slug = models.SlugField(unique=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def total(self):
         return sum(item.property.price * item.quantity for item in self.order_items.all())

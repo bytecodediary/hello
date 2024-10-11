@@ -1,5 +1,5 @@
 from django.test import TestCase
-from .models import CustomUser, Property, Property_Features, Cart, CartItem, Order, Order_Item, Property_Lord, Agent, Transaction, Payment, client, Image
+from .models import CustomUser, Property, Property_Features, Cart, CartItem, Order, Order_Item, Owner, Agent, Transaction, Payment, client, Image
 
 # Create your tests here.
 class customuser_test(TestCase):

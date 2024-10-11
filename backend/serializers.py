@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate
-from .models import CustomUser,Payment,Property,CartItem,Cart,Property_Features, Order, OrderItem, Agent, Image, Client, Property_Lord, Transaction, Notification
+from .models import CustomUser,Payment,Property,CartItem,Cart,PropertyFeature, Order, OrderItem, Agent, Image, Client, Owner, Transaction, Notification
 
 class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -43,7 +43,7 @@ class LoginSerializer(serializers.ModelSerializer):
     
 class PropertyFeaturesSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Property_Features
+        model = PropertyFeature
         fields = ['feature_name', 'feature_value']
 
 class ImageSerializer(serializers.ModelSerializer):
