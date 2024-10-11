@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate
-from .models import CustomUser,Payment,Property,CartItem,Cart,Property_Features, Order, OrderItem, Agent, Image # Client, Property_Lord,   Transaction, Notification
+from .models import CustomUser,Payment,Property,CartItem,Cart,Property_Features, Order, OrderItem, Agent, Image, Client, Property_Lord, Transaction, Notification
 
 class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -51,13 +51,23 @@ class ImageSerializer(serializers.ModelSerializer):
         model = Image
         fields = ['id', 'image', 'image_alt']
 
+class OwnerSerializer(serializers.ModelSerializer):
+    property_details = serializers.SerializerMethodField()
+    property = serializers.PrimaryKeyRelatedField(read_only=True, source='property.id')
+    user = serializers.StringRelatedField()
+
+    class Meta:
+        model = Owner
+        fields = ['id', 'property', 'user', 'property_details', 'phone_number' ]
+
 class PropertySerializer(serializers.ModelSerializer):
     features = PropertyFeaturesSerializer(many=True, required=False)
+    owners = OwnerSerializer(many=True, read_only=True, source='owned_properties')
     images = ImageSerializer(many=True, read_only=True)
 
     class Meta:
         model = Property 
-        fields = ['slug', 'title','description', 'price', 'image', 'city', 'address', 'listed_at', 'updated_at', 'features']
+        fields = ['slug', 'title', 'description', 'price', 'image', 'city', 'address', 'listed_at', 'updated_at', 'features']
     
     def create(self,request, **validated_data):
         features_data = validated_data.pop('features', [])
@@ -69,7 +79,7 @@ class PropertySerializer(serializers.ModelSerializer):
             Property_Features.objects.create(property=property_instance, **feature_data)
         
         for image_data in images_data:
-            Image.objcects.create(property=property_instance, **image_data)
+            Image.objects.create(property=property_instance, **image_data)
 
         return property_instance
 
@@ -83,22 +93,34 @@ class PropertySerializer(serializers.ModelSerializer):
         instance.image = validated_data.get('image', instance.image)
         instance.save()
         
-
         instance.features.all().delete()
         for feature_data in features_data:
             Property_Features.objects.create(property=instance, **feature_data)
 
-        
         instance.images.all().delete()
         for image_data in images_data:
             Image.objects.create(property=instance, **image_data)
 
         return instance
 
+class TransactionSerializer(serializers.ModelSerializer):
+    payment_details = serializers.SerializerMethodField()
+    payment = serializers.PrimaryKeyRelatedField(read_only=True, source='payment.id')
+
+    class Meta:
+        model = Transaction
+        fields = ['id', 'amount', 'date_paid', 'transaction_desc', 'payment_details', 'payment']
+
+    def get_payment_details(self, obj):
+        return PaymentSerializer(obj.payment).data
+
 class PaymentSerializer(serializers.ModelSerializer):
+    transactions = TransactionSerializer(many=True, source='transactions', read_only=True)
+    user = serializers.StringRelatedField()
+
     class Meta:
         model = Payment
-        fields = ['price']
+        fields = ['id', 'price', 'user', 'transaction_type', 'updated_at', 'description', 'added_at', 'transactions']
 
 class CartItemSerializer(serializers.ModelSerializer):
     property_name = serializers.CharField(source="property.title", read_only=True)
@@ -145,3 +167,17 @@ class AgentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Agent
         fields = ['id', 'user', 'phone_number', 'dob', 'listings', 'is_available']
+
+class ClientSerializer(serializers.ModelSerializer):
+    tenant = CustomUserSerializer(source='CustomUser.username', read_only=True)
+
+    class Meta:
+        model = Client
+        fields = ['id', 'tenant', 'phone_number', 'has_paid']
+
+class NotificationSerializer(serializers.ModelSerializer):
+    user = serializers.StringRelatedField()
+
+    class Meta:
+        model = Notification
+        fields = ['id', 'message', 'user', 'received_at', 'is_read']

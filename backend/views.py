@@ -11,20 +11,6 @@ from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from.filters import PropertyFilter
 
-# Create your views here.
-# def property_view(request):
-#     properties = Property.objects.all()
-#     context = {"properties":properties}
-#     return render(request, "backend/index.html", context)
-# migration from native django to the rest framework
-# def register_view(request):
-#     if request.method =="POST":
-#         form  = UserCreationForm(request.Post)
-#         if form.is_valid():
-#             username = form.cleaned_data.get("username")
-#             if User.objects.filter(username=username).exists():
-#                 pass
-
 class ChangeUserTypeView(generics.UpdateAPIView):
     queryset = CustomUser.objects.all()
     serializer_class = ChangeUserTypeSerializer
