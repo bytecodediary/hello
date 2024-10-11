@@ -222,6 +222,12 @@ class Agent(models.Model):
         if self.dob < t22_years:
             return ValidationError("Age is below 22 years")
         return self.dob
+    
+order_status = (
+    ('delivered', 'Delivered'),
+    ('returned', 'Returned'),
+    ('')
+)
 
 class Order(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name="order")
