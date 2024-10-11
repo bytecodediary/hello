@@ -63,6 +63,10 @@ class OwnerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Owner
         fields = ['id', 'property', 'user', 'property_details', 'phone_number' ]
+    
+    def get_property_details(self, obj):
+        # Implement this method to return property details if needed
+        return obj.property.title if obj.property else None
 
 class PropertySerializer(serializers.ModelSerializer):
     features = PropertyFeaturesSerializer(many=True, required=False)
@@ -73,7 +77,7 @@ class PropertySerializer(serializers.ModelSerializer):
         model = Property 
         fields = ['slug', 'title', 'description', 'price', 'image', 'city', 'address', 'listed_at', 'updated_at', 'features']
     
-    def create(self,request, **validated_data):
+    def create(self, **validated_data):
         features_data = validated_data.pop('features', [])
         images_data = validated_data.pop('images', [])
 
@@ -91,7 +95,7 @@ class PropertySerializer(serializers.ModelSerializer):
         features_data = validated_data.pop('features', [])
         images_data = validated_data.pop('images', [])
 
-        instance.title = validated_data.get('name', instance.title)
+        instance.title = validated_data.get('title', instance.title)
         instance.description = validated_data.get('description', instance.description)
         instance.price = validated_data.get('price', instance.price)
         instance.image = validated_data.get('image', instance.image)

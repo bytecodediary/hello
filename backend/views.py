@@ -5,6 +5,7 @@ from django.contrib.auth import login
 from django.contrib.auth.models import User
 # from django import messages
 from .serializers import CustomUserSerializer, ChangeUserTypeSerializer,LoginSerializer,PropertySerializer,CartSerializer, CartItemSerializer
+from .serializers import OwnerSerializer
 from rest_framework import status, generics, permissions
 from .models import CustomUser, Property, Cart, CartItem
 from rest_framework.response import Response
@@ -22,6 +23,7 @@ class ChangeUserTypeView(generics.UpdateAPIView):
 class UserRegistrationView(generics.CreateAPIView):
     queryset = CustomUser.objects.all()
     serializer_class =CustomUserSerializer
+    permission_classes[permissions.AllowAny]
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -51,7 +53,7 @@ class UserLoginView(generics.GenericAPIView):
 class PropertyListCreateView(generics.ListCreateAPIView):
     queryset = Property.objects.all()
     serializer_class = PropertySerializer
-    filter_backends = (DjangoFilterBackend, )
+    filter_backends = (DjangoFilterBackend)
     filterset_class = PropertyFilter
 
 class PropertyDetailView(generics.RetrieveUpdateDestroyAPIView):
