@@ -58,9 +58,9 @@ This section provides instructions on how to set up PostgreSQL for this project.
 
 Before you begin, ensure you have the following installed on your machine:
 
-- [PostgreSQL](https://www.postgresql.org/download/) (version X.X or higher)
+- [PostgreSQL](https://www.postgresql.org/download/) (version 13.X or higher)
 - [pgAdmin](https://www.pgadmin.org/download/) (optional, for GUI management)
-- [Node.js](https://nodejs.org/) (if your project requires it)
+- [Node.js](https://nodejs.org/) (for the front-end )
 
 ## Installation
 
