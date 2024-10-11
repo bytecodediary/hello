@@ -109,7 +109,6 @@ CSRF_TRUSTED_ORIGINS = [
 # }
 
 DATABASES = {
-<<<<<<< HEAD
     "default": {
         "ENGINE": "django.db.backends.mysql",
         "NAME": "unreal", #postgres
@@ -117,11 +116,6 @@ DATABASES = {
         "USER": "here", #postgres
         "Host": "localhost",
         "PASSWORD": "larrymax",
-=======
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
->>>>>>> 88c3b212e495d4754c793dd8fbccad8ead997ca8
     }
 }
 
