@@ -60,10 +60,6 @@ MIDDLEWARE = [
     #video added user_api.apps 1:53
 ]
 
-CORS_ALLOWED_ORIGINS = [
-    "http://127.0.0.1:3000",
-    "http://localhost:3000"
-]
 #added
 CORS_ALLOWED_CREDENTIALS = True
 
@@ -92,11 +88,16 @@ REST_FRAMEWORK = {'DEFAULT_PERMISSION_CLASSES': [
             'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
                 ]
 }
+CORS_ALLOWED_ORIGINS = [
+    "http://127.0.0.1:3000",
+    "http://localhost:3000"
+]
 
 CSRF_TRUSTED_ORIGINS = [
     "https://localhost:8000",
 ]
 
+CORS_ALLOW_CREDENTIALS = True
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 

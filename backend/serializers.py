@@ -7,8 +7,8 @@ class CustomUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ['url', 'username',  'email', 'password']
-        read_only_fields = ['url', 'username',  'email', 'password']
+        fields = ['id', 'username', 'first_name',  'email', 'password'] #'first_name', 'last_name',
+        read_only_fields = ['id']
 
     def create(self, validated_data):
         user = CustomUser(**validated_data)
@@ -80,7 +80,7 @@ class PropertySerializer(serializers.ModelSerializer):
         property_instance = Property.objects.create(**validated_data)
 
         for feature_data in features_data:
-            Property_Features.objects.create(property=property_instance, **feature_data)
+            PropertyFeature.objects.create(property=property_instance, **feature_data)
         
         for image_data in images_data:
             Image.objects.create(property=property_instance, **image_data)
@@ -99,7 +99,7 @@ class PropertySerializer(serializers.ModelSerializer):
         
         instance.features.all().delete()
         for feature_data in features_data:
-            Property_Features.objects.create(property=instance, **feature_data)
+            PropertyFeature.objects.create(property=instance, **feature_data)
 
         instance.images.all().delete()
         for image_data in images_data:
