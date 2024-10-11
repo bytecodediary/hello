@@ -33,12 +33,16 @@ export default function RegisterPage() {
       return;
     }
 
-    // Prepare user data to send to the API
-    const userData = { username, email, password };
+    // Prepare FormData to send to the API
+    const formData = new FormData();
+    formData.append("username", username);
+    formData.append("email", email);
+    formData.append("password", password);
+    formData.append("confirmPassword", confirmPassword);
 
     try {
-      const result = await registerUser(FormData); // Pass the FormData object
-      setMessage(result.message); // Show success message
+      const result = await registerUser(formData);
+      setMessage(result.message);
       setTimeout(() => {
         router.push("/login");
       }, 2000);

@@ -62,8 +62,6 @@ MIDDLEWARE = [
     #video added user_api.apps 1:53
 ]
 
-#added
-CORS_ALLOWED_CREDENTIALS = True
 
 ROOT_URLCONF = "hello.urls"
 
