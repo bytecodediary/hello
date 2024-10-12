@@ -2,7 +2,7 @@ from .models import Property
 from .serializers import CustomUserSerializer, ChangeUserTypeSerializer,LoginSerializer,PropertySerializer,CartSerializer, CartItemSerializer, ClientSerializer
 from .serializers import OwnerSerializer, NotificationSerializer, TransactionSerializer, PaymentSerializer, OrderSerializer, OrderItemSerializer,AgentSerializer
 from rest_framework import status, generics, permissions
-from .models import CustomUser, Property, Cart, CartItem, Client, Agent, Owner, Notification, Transaction, Payment, Order, OrderItem
+from .models import CustomUser, Property, Cart, CartItem, Client, Agent, Owner,  Order, OrderItem #Notification, Transaction, Payment,
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from.filters import PropertyFilter
@@ -88,6 +88,16 @@ class CartUpdateItemView(generics.UpdateAPIView):
         self.perform_update(serializer)
         return Response(serializer.data)
 
+class Checkout(generics.CreateAPIView):
+    serializer_class = CartSerializer
+
+    def get_item(self, slug):
+        return Cart.get_objects_or_404(cart, {})
+    
+    # I have not implimented the checkout class well i will revisit at a later date so no url for you yet
+    def post(self, request, *args, **kwargs):
+        pass
+
 class CartDeleteItemView(generics.DestroyAPIView):
     queryset = CartItem.objects.all()
     lookup_field = 'slug'
@@ -121,6 +131,24 @@ class OwnerProfileView(generics.GenericAPIView):
     def get_objects(self):
         return self.request.user.owner
 
+class OrderView(generics.RetrieveAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = OrderSerializer
 
+    def get_objects(self):
+        return Order.objects.get(user=self.request.user)
+
+class OrderItemView(generics.GenericAPIView):
+    permission_class = [permissions.IsAuthenticated]
+    serializer_class = OrderItemSerializer
+
+    def create_item(self):
+        pass
+class CancelOrderView(generics.DestroyAPIView):
+    permission_class =[permissions.IsAuthenticated]
+    serializer_class = OrderSerializer
+
+    def cancel_order(self):
+        pass
 
 

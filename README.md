@@ -1,7 +1,7 @@
 
 # Real Estate System
 
-The **Real Estate System** is a web application designed to streamline the management, listing, and sale of real estate properties. The platform allows real estate agents, property owners, and potential buyers to interact seamlessly, facilitating property searches, listing management, and transactions in a user-friendly and efficient manner.
+The **Real Estate System** is an application designed to streamline the management, rental, listing, and sale of real estate properties. The platform allows real estate agents, property owners, and potential buyers to interact seamlessly, facilitating property searches, listing management, and transactions in a user-friendly and efficient manner.
 
 ## Features
 
@@ -34,20 +34,29 @@ The **Real Estate System** is a web application designed to streamline the manag
     ```bash
     cd hello
     ```
+3. setUp a virtual environment:
+    ### on window:
+    ```bash
+    python -m venv myenv
+    ```
+    ### on linux:
+    ```bash
+    python venv myenv
+    ```
 
-3. Install the dependencies:
+4. Install the dependencies:
     ```
     pip install -r requirements.txt
     ```
     
-4. Set up your environment variables (e.g., database credentials, secret keys).
+5. Set up your environment variables (e.g., database credentials, secret keys).
 
-5. Run the development server:
+6. Run the development server:
     ```bash
     python manage.py runserver
     ```
 
-6. Access the application at `http://localhost:8000`.
+7. Access the application at `http://localhost:8000`.
 Additionally, you'll need the following setup
 
 # PostgreSQL Setup
@@ -60,7 +69,7 @@ Before you begin, ensure you have the following installed on your machine:
 
 - [PostgreSQL](https://www.postgresql.org/download/) (version 13.X or higher)
 - [pgAdmin](https://www.pgadmin.org/download/) (optional, for GUI management)
-- [Node.js](https://nodejs.org/) (for the front-end )
+- [python django](https://djangoproject.com/)(preferably in a a virtual environment)
 
 ## Installation
 
@@ -125,8 +134,8 @@ DB_PASSWORD=your_password
 Run the migrations to set up the database schema:
 
 ```bash
-# Example command, adjust based on your setup
-npm run migrate
+# Example command to run the database schema migration in django
+python manage.py migrate
 ```
 
 ## Troubleshooting
@@ -139,7 +148,6 @@ npm run migrate
 - [PostgreSQL Documentation](https://www.postgresql.org/docs/)
 - [pgAdmin Documentation](https://www.pgadmin.org/docs/)
 
-```
 
 Feel free to modify the instructions to better fit your project's needs.
 ## Contributing

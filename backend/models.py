@@ -92,6 +92,7 @@ class Property(models.Model):
     listed_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     price = models.IntegerField()
+    stock = models.IntegerField(default=1)
     slug = models.SlugField(unique=True, blank=True)
     
 
@@ -101,6 +102,9 @@ class Property(models.Model):
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = generate_unique_slug()
+        if stock < 1:
+            self.stock = 1
+        
         super().save(*args, **kwargs)
     class Meta:
         verbose_name = 'Property'
