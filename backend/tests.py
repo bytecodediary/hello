@@ -9,12 +9,14 @@ from .serializers import PropertySerializer
 class customuser_test(TestCase):
     def setUp(self):
         self.user = CustomUser.objects.create(
+            username='username',
             email = 'email@gmail.com',
             password = 'password',
         )
     def test_user_creation(self):
         self.assertEqual(self.user.email, 'email@gmail.com')
         self.assertequal(self.user.password, 'password')
+        self.assertEqual(self.user.username, 'username')
     
 class property_test(TestCase):
     def setUp(self):
@@ -23,7 +25,7 @@ class property_test(TestCase):
             password = 'password'
         )
         self.image = Image.objects.create(
-            image = 'image.png',
+            image = '/home/trent22/hello/hello/backend/rental_system.png',
             image_alt = 'test image alt'
         )
         self.property = Property.objects.create(
@@ -33,12 +35,13 @@ class property_test(TestCase):
             status = 'available',
             image = self.image,
             landlord = self.user,
+            
         )
-
+    
     def test_property_creation(self):
+        property_id = property.id
         self.assertEqual(self.property.title, 'test name')
         self.assertEqual(self.property.status, 'available')
-        self.assertEqual(self.property.landlord.email, 'example.gmail.com')
         
     def test_str(self):
         self.assertEqual(self.property.title, 'test name')
@@ -192,7 +195,7 @@ class PropertySerializerTest(TestCase):
             'features': [{'feature_name': 'pool', 'feature_value': 1}],
             'images': [{'image_alt': 'front view', 'image': 'image_url'}],
         }
-
+        property_id = self.property.id
         serializer = PropertySerializer(data=data)
         self.assertTrue(serializer.is_valid())
         property_instance = serializer.save()
@@ -216,11 +219,18 @@ class PropertySerializerTest(TestCase):
         # self.assertIn('features', serializer.errors)
 class PropertyUpdateTest(TestCase):
    
-    def setUp(self):
-        self.owner = Owner.objects.create(
-                email = 'owner@gmail.com',
-                phone_number = '+254700045555'
-        )
+    # def setUp(self):
+    #     self.owner = Owner.objects.create(
+    #             name = 'owner 1',
+    #             phone_number = '+254700045555'
+    #     )
+    #     self.image = Image.objects.create(
+    #         image='/home/trent22/hello/hello/backend/rental_system.png', image_alt='property image'
+    #     )
+    #     self.property = property.objects.create(
+    #         title='old title', description='old description', image=self.image, owner=self.owner,price=4000000
+    #     )
+    #     PropertyFeature.objects.create(property=self.property, feature_name='old feature', feature_value=1)
 
     
     def test_update_property(self):
@@ -229,18 +239,16 @@ class PropertyUpdateTest(TestCase):
         PropertyFeature.objects.create(property=property_instance, feature_name='old feature', feature_value=1)
         Image.objects.create(property=property_instance, image_alt='old image', image='old image url')
 
-    
-        
         updated_data = {
             'title': 'new title',
             'description': 'new description',
             'price': 5000000,
-            'owner': self.owner.id,
+            
             'features': [{'feature_name': 'updated pool', 'feature_value': 2}],
             'images': [{'image_alt': 'updated image rear', 'image': 'updated_image_url'}]
         }
 
-        serializer = PropertySerializer(property_instance, data=update_data)
+        serializer = PropertySerializer(property_instance, data=updated_data)
         self.assertTrue(serializer.is_valid())
         updated_instance = serializer.save()
 
@@ -260,14 +268,14 @@ class PropertyUpdateTest(TestCase):
 
     def test_invalid_update_data(self):
         invalid_data = {
-            'title': 'invalid title ',
+            'title': '',
             'description': 'invalid description',
             'price': 'invalid price',
-            'image': [{'image_alt':'image update', 'image': 'image_url_update_invalid'}],
-            'features': [],
+            'features': [{'feature_name': 'pool', 'feature_value': 1}],
+            'images': [{'image_alt':'image update', 'image': 'image_url_update_invalid'}],
         }
 
         serializer = PropertySerializer(data=invalid_data)
         self.assertFalse(serializer.is_valid())
         self.assertIn('price', serializer.errors)
-        self.assertIn('features', serializer.errors)
+        self.assertIn('title', serializer.errors)

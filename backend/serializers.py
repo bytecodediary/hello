@@ -75,7 +75,7 @@ class PropertySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Property 
-        fields = ['slug', 'title', 'description', 'price', 'image', 'city', 'address', 'listed_at', 'updated_at', 'features']
+        fields = ['slug', 'title', 'owners', 'description', 'price', 'images', 'city', 'address', 'listed_at', 'updated_at', 'features']
     
     def create(self, **validated_data):
         features_data = validated_data.pop('features', [])
