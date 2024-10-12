@@ -49,7 +49,7 @@ The **Real Estate System** is a web application designed to streamline the manag
 
 6. Access the application at `http://localhost:8000`.
 Additionally, you'll need the following setup
-```markdown
+
 # PostgreSQL Setup
 
 This section provides instructions on how to set up PostgreSQL for this project.
