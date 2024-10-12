@@ -1,3 +1,4 @@
+django-phone-field[phonenumbers]
 asgiref==3.8.1
 certifi==2024.8.30
 cffi==1.17.1
@@ -21,7 +22,7 @@ PyJWT==2.9.0
 python-decouple==3.8
 python-dotenv==1.0.1
 requests==2.32.3
-rest-framework-simplejwt==0.0.2
+# rest-framework-simplejwt==0.0.2
 sqlparse==0.5.1
 typing_extensions==4.12.2
 tzdata==2024.2

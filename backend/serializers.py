@@ -101,13 +101,15 @@ class PropertySerializer(serializers.ModelSerializer):
         instance.image = validated_data.get('image', instance.image)
         instance.save()
         
-        instance.features.all().delete()
-        for feature_data in features_data:
-            PropertyFeature.objects.create(property=instance, **feature_data)
+        if features_data:
+            instance.features.all().delete()
+            for feature_data in features_data:
+                PropertyFeature.objects.create(property=instance, **feature_data)
 
-        instance.images.all().delete()
-        for image_data in images_data:
-            Image.objects.create(property=instance, **image_data)
+        if images_data:
+            instance.images.all().delete()
+            for image_data in images_data:
+                Image.objects.create(property=instance, **image_data)
 
         return instance
 
