@@ -88,15 +88,30 @@ class CartUpdateItemView(generics.UpdateAPIView):
         self.perform_update(serializer)
         return Response(serializer.data)
 
-class Checkout(generics.CreateAPIView):
+class CheckoutView(generics.CreateAPIView):
     serializer_class = CartSerializer
-
-    def get_item(self, slug):
-        return Cart.get_objects_or_404(cart, {})
+    permission_class = [permissions.IsAuthenticated]
     
     # I have not implimented the checkout class well i will revisit at a later date so no url for you yet
     def post(self, request, *args, **kwargs):
-        pass
+        cart_items = CartItem.objects.filter(user=request.user)
+        if not cart_items.exists():
+            return Response({'details': 'no items in cart found'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        order = Order.objects.create(user=request.user)
+
+        for cart_item in cart_items:
+            OrderItem.objects.create(
+                order=order,
+                property=cart_item.property,
+                quantity=cart_item.quantity,
+            )
+        
+        #remove the items from cart after creating an order
+        cart_items.delete()
+
+        serializer = OrderSerializer(order)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 class CartDeleteItemView(generics.DestroyAPIView):
     queryset = CartItem.objects.all()
@@ -131,24 +146,44 @@ class OwnerProfileView(generics.GenericAPIView):
     def get_objects(self):
         return self.request.user.owner
 
-class OrderView(generics.RetrieveAPIView):
+class OrderView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = OrderSerializer
 
-    def get_objects(self):
+    def get_queryset(self):
         return Order.objects.get(user=self.request.user)
 
-class OrderItemView(generics.GenericAPIView):
+class OrderDetailView(generics.RetrieveAPIView):
     permission_class = [permissions.IsAuthenticated]
     serializer_class = OrderItemSerializer
+    queryset = Order.objects.all()
 
-    def create_item(self):
-        pass
+    def get_queryset(self):
+        return Order.objects.filter(user=self.request.user)
 class CancelOrderView(generics.DestroyAPIView):
     permission_class =[permissions.IsAuthenticated]
     serializer_class = OrderSerializer
+    queryset = Order.objects.all()
 
     def cancel_order(self):
-        pass
+        order =Order.objects.filter(user=self.request.user)
+        order.delete()
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+class OrderItemListView(generics.ListAPIView):
+    permission_class = [permissions.IsAuthenticated]
+    serializer_class = OrderItemSerializer
+
+    def get_queryset(self):
+        slug = self.kwargs['slug']
+        return OrderItem.objects.filter(slug=slug, order__user=self.request.user)
+    
+class OrderItemDetailView(generics.RetrieveAPIView):
+    permission_class = [permissions.IsAuthenticated]
+    serializer_class = OrderItemSerializer
+
+    class get_queryset(self):
+        return OrderItem.objects.filter(order__user=self.request.user)
 
 
