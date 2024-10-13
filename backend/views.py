@@ -1,12 +1,13 @@
 from .models import Property
 from .serializers import CustomUserSerializer, ChangeUserTypeSerializer,LoginSerializer,PropertySerializer,CartSerializer, CartItemSerializer, ClientSerializer
-from .serializers import OwnerSerializer, NotificationSerializer, TransactionSerializer, PaymentSerializer, OrderSerializer, OrderItemSerializer,AgentSerializer
+from .serializers import OwnerSerializer, NotificationSerializer, NotificationMiniSerializer, FCMDeviceSerializer, TransactionSerializer, PaymentSerializer, OrderSerializer, OrderItemSerializer,AgentSerializer
 from rest_framework import status, generics, permissions
 from .models import CustomUser, Property, Cart, CartItem, Client, Agent, Owner,  Order, OrderItem #Notification, Transaction, Payment,
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from.filters import PropertyFilter
 
+#custom user views
 class ChangeUserTypeView(generics.UpdateAPIView):
     queryset = CustomUser.objects.all()
     serializer_class = ChangeUserTypeSerializer
@@ -45,6 +46,7 @@ class UserLoginView(generics.GenericAPIView):
             },  status=status.HTTP_201_CREATED,)
         return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
 
+#property views
 class PropertyListCreateView(generics.ListCreateAPIView):
     queryset = Property.objects.all()
     serializer_class = PropertySerializer
@@ -55,6 +57,7 @@ class PropertyDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Property.objects.all()
     serializer_class = PropertySerializer
 
+# cart views
 class CartDetailView(generics.RetrieveAPIView):
     serializer_class = CartSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -90,9 +93,9 @@ class CartUpdateItemView(generics.UpdateAPIView):
 
 class CheckoutView(generics.CreateAPIView):
     serializer_class = CartSerializer
-    permission_class = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
     
-    # I have not implimented the checkout class well i will revisit at a later date so no url for you yet
+    # check out view
     def post(self, request, *args, **kwargs):
         cart_items = CartItem.objects.filter(user=request.user)
         if not cart_items.exists():
@@ -110,6 +113,7 @@ class CheckoutView(generics.CreateAPIView):
         #remove the items from cart after creating an order
         cart_items.delete()
 
+        #serialize the order stuff
         serializer = OrderSerializer(order)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -122,6 +126,7 @@ class CartDeleteItemView(generics.DestroyAPIView):
         item.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+#profiles
 class AgentProfileView(generics.GenericAPIView):
     queryset = Agent.objects.all()
     permission_classes = [permissions.IsAuthenticated]
@@ -146,6 +151,7 @@ class OwnerProfileView(generics.GenericAPIView):
     def get_objects(self):
         return self.request.user.owner
 
+# order view
 class OrderView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = OrderSerializer
@@ -154,14 +160,14 @@ class OrderView(generics.ListAPIView):
         return Order.objects.get(user=self.request.user)
 
 class OrderDetailView(generics.RetrieveAPIView):
-    permission_class = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
     serializer_class = OrderItemSerializer
     queryset = Order.objects.all()
 
     def get_queryset(self):
         return Order.objects.filter(user=self.request.user)
 class CancelOrderView(generics.DestroyAPIView):
-    permission_class =[permissions.IsAuthenticated]
+    permission_classes =[permissions.IsAuthenticated]
     serializer_class = OrderSerializer
     queryset = Order.objects.all()
 
@@ -172,7 +178,7 @@ class CancelOrderView(generics.DestroyAPIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 class OrderItemListView(generics.ListAPIView):
-    permission_class = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
     serializer_class = OrderItemSerializer
 
     def get_queryset(self):
@@ -180,10 +186,82 @@ class OrderItemListView(generics.ListAPIView):
         return OrderItem.objects.filter(slug=slug, order__user=self.request.user)
     
 class OrderItemDetailView(generics.RetrieveAPIView):
-    permission_class = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
     serializer_class = OrderItemSerializer
 
     class get_queryset(self):
         return OrderItem.objects.filter(order__user=self.request.user)
 
 
+# notification views
+
+class NotificationListView(generics.ListAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = NotificationMiniSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        queryset = Notification.objects.filter(
+            user=user,
+            notification = Notification.is_read
+        ).order_by('-received_at')
+        return queryset
+
+class NotificationAPIView(generics.RetrieveDestroyAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_classes = NotificationMiniSerializer
+    queryset = Notification.objects.all()
+
+    def retrieve(self,request, *args, **kwargs):
+        user = request.user
+        notification = self.get_objects()
+        if notification.user != request.user:
+            raise PermissionDenied(
+                'This notification does not belong to you'
+            )
+        serializer.get_serializer(notification)
+        return Response(serializer.data)
+    
+    def destroy(self, request, *args, **kwargs):
+        use = reuqest.user
+        notification = self.get_objects()
+        if notification.user != request.user:
+            raise PermissionDenied(
+                'Action not allowed as this notification does not belong to you'
+            )
+        notification.delete()
+        return Response({'details': _('The notification has been deleted successfully')}, status=status.HTTP_204_NOT_FOUND)
+
+class MarkAllAsReadView(generics.APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self):
+        user = self.request.user
+        notifications = Notification.objects.filter(
+            user=user, status = Notification.is_read == False
+        )
+
+        for notification in notifications:
+            if notification.user != request.user:
+                raise PermissionDenied(
+                    'Action not allowed'
+                )
+            notification.status = notification.is_read == True
+
+            notification.save()
+        return Response('No new notification', status=status.HTTP_200_OK)
+
+class CreateDeviceAPIView(generics.CreateAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def create(self, request):
+        user = request.user
+        registration_id = request.data.get("registration_id", None)
+        type = request.data.get("type", None)
+        device = FCMDevice.objects.filter(registration_id=registration_id, type=type)
+        if device.count() > 0:
+            raise NotAcceptable("This Device already exists.")
+        serializer = FCMDeviceSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(user=user)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)

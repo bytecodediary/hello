@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate
 from .models import CustomUser,Payment,Property,CartItem,Cart,PropertyFeature, Order, OrderItem, Agent, Image, Client, Owner, Transaction, Notification
+from fcm_django.models import FCMDevice
 
 class CustomUserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -184,8 +185,27 @@ class ClientSerializer(serializers.ModelSerializer):
     class Meta:
         model = Client
         fields = ['id', 'tenant', 'phone_number', 'has_paid']
+class FCMDeviceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FCMDevice
+        fields = [
+            'user',
+            'action',
+            'registration_id',
+            'name',
+            'device_id',
+            'type',
+            'date_created',
+        ]
 
 class NotificationSerializer(serializers.ModelSerializer):
+    user = serializers.StringRelatedField()
+
+    class Meta:
+        model = Notification
+        field = ['user', 'message']
+
+class NotificationMiniSerializer(serializers.ModelSerializer):
     user = serializers.StringRelatedField()
 
     class Meta:
