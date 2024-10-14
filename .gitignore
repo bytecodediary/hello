@@ -4,3 +4,6 @@ hello/__pycache__/
 backend/migrations/__pycache__/
 media/media/product_images/
 db.sqlite3
+core/__pycache__/
+core/migrations/__pycache__/
+hello/__pycache__/

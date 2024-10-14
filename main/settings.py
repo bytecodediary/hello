@@ -63,7 +63,7 @@ MIDDLEWARE = [
 ]
 
 
-ROOT_URLCONF = "hello.urls"
+ROOT_URLCONF = "main.urls"
 
 TEMPLATES = [
     {
@@ -110,17 +110,6 @@ CSRF_TRUSTED_ORIGINS = [
 CORS_ALLOW_CREDENTIALS = True
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-
-# DATABASES = {
-#     "default": {
-#         "ENGINE": "django.db.backends.postgresql",
-#         "NAME": "unreal", #postgres
-#         "PORT": "5432",
-#         "USER": "here", #postgres
-#         "Host": "localhost",
-#         "PASSWORD": "larrymax",
-#     }
-# }
 
 DATABASES = {
     # "default": {

@@ -102,10 +102,14 @@ class Property(models.Model):
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = generate_unique_slug()
-        if stock < 1:
-            self.stock = 1
         
         super().save(*args, **kwargs)
+        
+    def save_stock(self, *args, **kwargs):
+        if self.stock < 1:
+            self.stock = 1
+        super().save(*args, **kwargs)
+
     class Meta:
         verbose_name = 'Property'
         verbose_name_plural = 'Properties'
