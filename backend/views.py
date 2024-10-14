@@ -1,11 +1,13 @@
-from .models import Property
 from .serializers import CustomUserSerializer, ChangeUserTypeSerializer,LoginSerializer,PropertySerializer,CartSerializer, CartItemSerializer, ClientSerializer
 from .serializers import OwnerSerializer, NotificationSerializer, NotificationMiniSerializer, FCMDeviceSerializer, TransactionSerializer, PaymentSerializer, OrderSerializer, OrderItemSerializer,AgentSerializer
 from rest_framework import status, generics, permissions
-from .models import CustomUser, Property, Cart, CartItem, Client, Agent, Owner,  Order, OrderItem #Notification, Transaction, Payment,
+from .models import CustomUser, Property, Cart, CartItem, Client, Agent, Owner,  Order, OrderItem, Notification, Transaction, Payment
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from.filters import PropertyFilter
+from rest_framework.exceptions import PermissionDenied, NotAcceptable
+from fcm_django.models import FCMDevice
+from django.utils.translation import gettext_lazy as _
 
 #custom user views
 class ChangeUserTypeView(generics.UpdateAPIView):
@@ -189,7 +191,7 @@ class OrderItemDetailView(generics.RetrieveAPIView):
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = OrderItemSerializer
 
-    class get_queryset(self):
+    def get_queryset(self):
         return OrderItem.objects.filter(order__user=self.request.user)
 
 
@@ -214,17 +216,17 @@ class NotificationAPIView(generics.RetrieveDestroyAPIView):
 
     def retrieve(self,request, *args, **kwargs):
         user = request.user
-        notification = self.get_objects()
+        notification = self.get_object()
         if notification.user != request.user:
             raise PermissionDenied(
                 'This notification does not belong to you'
             )
-        serializer.get_serializer(notification)
+        serializer = self.get_serializer(notification)
         return Response(serializer.data)
     
     def destroy(self, request, *args, **kwargs):
-        use = reuqest.user
-        notification = self.get_objects()
+        user = request.user
+        notification = self.get_object()
         if notification.user != request.user:
             raise PermissionDenied(
                 'Action not allowed as this notification does not belong to you'
@@ -232,13 +234,13 @@ class NotificationAPIView(generics.RetrieveDestroyAPIView):
         notification.delete()
         return Response({'details': _('The notification has been deleted successfully')}, status=status.HTTP_204_NOT_FOUND)
 
-class MarkAllAsReadView(generics.APIView):
+class MarkAllAsReadView(generics.GenericAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
-    def post(self):
+    def post(self, request):
         user = self.request.user
         notifications = Notification.objects.filter(
-            user=user, status = Notification.is_read == False
+            user=user, status = Notification.is_read is False
         )
 
         for notification in notifications:
@@ -246,7 +248,7 @@ class MarkAllAsReadView(generics.APIView):
                 raise PermissionDenied(
                     'Action not allowed'
                 )
-            notification.status = notification.is_read == True
+            notification.status = notification.is_read is True
 
             notification.save()
         return Response('No new notification', status=status.HTTP_200_OK)

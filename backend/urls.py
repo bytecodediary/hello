@@ -1,6 +1,6 @@
 from django.urls import path
 from .views import UserRegistrationView, UserLoginView, PropertyListCreateView, PropertyDetailView, CartDeleteItemView, CartAddItemView,CartDetailView, CartUpdateItemView
-from .views import OwnerProfileView, AgentProfileView, ClientProfileView, CheckoutView, OrderItemView, OrderView, OrderDetailView, CancelOrderView, OrderItemDetailView
+from .views import OwnerProfileView, AgentProfileView, ClientProfileView, CheckoutView, OrderItemListView, OrderView, OrderDetailView, CancelOrderView, OrderItemDetailView
 from .views import NotificationListView, NotificationAPIView, MarkAllAsReadView, CreateDeviceAPIView
 
 app_name = "backend"
@@ -20,9 +20,9 @@ urlpatterns = [
     path('order', OrderView.as_view(), name='order'),
     path('order/<slug:slug>/', OrderDetailView.as_view(), name='order-detail'),
     path('order/cancel/', CancelOrderView.as_view(), name='cancel-order'),
-    path('checkout', CheckoutView.as_view(), nam='checkout'),
-    path('order/<slug:slug>/items/', OrderItemView.as_view(), name='order-items-view'),
-    path('order/<slug:slug>/items/<slug:slug>/', OrderItemDetailView.as_view(), name='order-item-details'),
+    path('checkout', CheckoutView.as_view(), name='checkout'),
+    path('order/<slug:slug>/items/', OrderItemListView.as_view(), name='order-items-view'),
+    path('order/<slug:slug>/items/<int:id>/', OrderItemDetailView.as_view(), name='order-item-details'),
     path('notifications', NotificationListView.as_view(), name='notification'),
     path('notification/<int:pk>/', NotificationAPIView.as_view(), name='notification-detail'),
     path('notification/read', MarkAllAsReadView.as_view(), name='mark-as-read'),

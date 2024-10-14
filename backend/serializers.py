@@ -92,7 +92,7 @@ class PropertySerializer(serializers.ModelSerializer):
 
         return property_instance
 
-    def update(self, **validated_data):
+    def update(self, instance, **validated_data):
         features_data = validated_data.pop('features', [])
         images_data = validated_data.pop('images', [])
 
