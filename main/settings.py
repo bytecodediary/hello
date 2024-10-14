@@ -41,13 +41,17 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "backend",
+    "listing",
     "rest_framework",
     "django_filters",
     # added simplejwt for jason web token
     "rest_framework_simplejwt",
     # "django_guardians",
-    "corsheaders"
+    "corsheaders",
+    "user",
+    "order",
+    "payment",
+
 ]
 
 MIDDLEWARE = [
@@ -81,8 +85,8 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "hello.wsgi.application"
-AUTH_USER_MODEL = "backend.CustomUser"
+WSGI_APPLICATION = "main.wsgi.application"
+AUTH_USER_MODEL = "user.CustomUser"
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
@@ -172,11 +176,11 @@ STATICFILES_DIRS = [
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
-LOGIN_URL = "backend:login"
-LOGOUT_URL = "backend:logout"
+LOGIN_URL = "main:login"
+LOGOUT_URL = "main:logout"
 
-LOGIN_REDIRECT_URL = "backend:home"
-LOGOUT_REDIRECT_URL = "backend:home"
+LOGIN_REDIRECT_URL = "main:home"
+LOGOUT_REDIRECT_URL = "main:home"
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 

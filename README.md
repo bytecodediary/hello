@@ -17,7 +17,7 @@ The **Real Estate System** is an application designed to streamline the manageme
   
 ## Technologies Used
 
-- **Backend**: Django (filters, rest_framework, )
+- **main**: Django (filters, rest_framework, )
 - **Frontend**: JavaScript (React, nextjs)
 - **Database**: PostgreSQL
 - **Authentication**: JWT / OAuth for secure login and user management
