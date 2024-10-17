@@ -26,21 +26,21 @@ class UserRegistrationView(generics.CreateAPIView):
 
 class UserLoginView(generics.GenericAPIView):
     serializer_class = LoginSerializer
+    queryset = CustomUser.objects.all()
 
-    def post(self,request,*args, **kwargs):
+    def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             user = serializer.validated_data['user']
-
             return Response({
                 'message': 'login successful',
-                user: {
+                'user': {
                     'email': user.email,
                     'first_name': user.first_name,
                     'last_name': user.last_name,
                 }
-            },  status=status.HTTP_201_CREATED,)
-        return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
+            }, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 #profiles

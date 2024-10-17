@@ -4,7 +4,7 @@ from rest_framework import status, generics, permissions
 from .models import Property, Notification
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
-from.filters import PropertyFilter
+from .filters import PropertyFilter
 from rest_framework.exceptions import PermissionDenied, NotAcceptable
 from fcm_django.models import FCMDevice
 from django.utils.translation import gettext_lazy as _
@@ -41,8 +41,7 @@ class NotificationAPIView(generics.RetrieveDestroyAPIView):
     queryset = Notification.objects.all()
 
     def retrieve(self,request, *args, **kwargs):
-        user = request.user
-        notification = self.get_object()
+        notification = self.get_object(user=request.user)
         if notification.user != request.user:
             raise PermissionDenied(
                 'This notification does not belong to you'
@@ -51,8 +50,7 @@ class NotificationAPIView(generics.RetrieveDestroyAPIView):
         return Response(serializer.data)
     
     def destroy(self, request, *args, **kwargs):
-        user = request.user
-        notification = self.get_object()
+        notification = self.get_object(user = request.user)
         if notification.user != request.user:
             raise PermissionDenied(
                 'Action not allowed as this notification does not belong to you'
