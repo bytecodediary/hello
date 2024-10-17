@@ -38,6 +38,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     is_pending_type_change = models.BooleanField(default=False)
     date_joined = models.DateTimeField(auto_now_add=True)
 
+
     objects = CustomUserManager()
 
     USERNAME_FIELD = "email"

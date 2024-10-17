@@ -42,18 +42,20 @@ class ChangeUserTypeSerializer(serializers.ModelSerializer):
         instance.apply_for_type_change(new_user_type)
         return instance
 
-class LoginSerializer(serializers.ModelSerializer):
+class LoginSerializer(serializers.Serializer):  # Use Serializer instead of ModelSerializer
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True)
 
     def validate(self, data):
-        email = data.get['email']
-        password = data.get['password']
+        email = data.get('email')  # Use parentheses instead of brackets
+        password = data.get('password')
 
+        print(f"attempting to validate with: {email}")
+        # Authenticate the user
         user = authenticate(request=self.context.get('request'), username=email, password=password)
 
         if user is None:
-            raise serializers.ValueError('invalid email or password')
+            raise serializers.ValidationError('Invalid email or password')  # Use ValidationError instead of ValueError
 
         data['user'] = user
         return data

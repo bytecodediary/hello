@@ -1,5 +1,6 @@
 from django.db import models
 from user.models import CustomUser
+from core.models import TimeStampedModel
 
 class Order(models.Model):
     order_status = (
@@ -9,10 +10,10 @@ class Order(models.Model):
     )
 
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name="order")
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
     status = models.CharField(choices=order_status, default='pending', max_length=50)
     slug = models.SlugField(blank=True, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"order for {self.user.username}"
@@ -41,7 +42,6 @@ class Cart(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
     slug = models.SlugField(unique=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
-
     def total(self):
         return sum(item.property.price * item.quantity for item in self.order_items.all())
         

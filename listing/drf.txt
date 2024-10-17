@@ -25,3 +25,11 @@
 9. RetrieveDetroyApiView
     Purpose: Combines RetrieveAPIView and DestroyAPIView. It allows you to retrieve and delete a single object.
     When to Use: Use it when you want a view that can fetch and delete an object
+
+
+{
+    "id": "754b75f5-638f-426b-b41c-aa6583ff48af",
+    "username": "admin1",
+    "first_name": "seth",
+    "email": "larrymax365@proton.me"
+}
