@@ -1,6 +1,5 @@
 from django.db import models
 from user.models import CustomUser
-from core.models import TimeStampedModel
 
 class Order(models.Model):
     order_status = (
@@ -36,7 +35,6 @@ class OrderItem(models.Model):
         if not self.save:
             self.slug = property.generate_unique_slug()
         super().save(*args, **kwargs)
-
 
 class Cart(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
