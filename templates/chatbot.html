@@ -1,0 +1,275 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .chatbot-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .chatbot-toggle {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s ease;
+        }
+
+        .chatbot-toggle:hover {
+            background-color: #45a049;
+        }
+
+        .chatbot-box {
+            position: absolute;
+            bottom: 80px;
+            right: 0;
+            width: 300px;
+            height: 400px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .chatbot-box.hidden {
+            opacity: 0;
+            transform: scale(0.9);
+            pointer-events: none;
+        }
+
+        .chatbot-header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chatbot-header h3 {
+            margin: 0;
+        }
+
+        .chatbot-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .chatbot-messages {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .chatbot-form {
+            display: flex;
+            padding: 10px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .chatbot-form input {
+            flex-grow: 1;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-right: 5px;
+            max-width: 80%;
+            /* Limit input width */
+        }
+
+        .chatbot-form button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .chatbot-form button:hover {
+            background-color: #45a049;
+        }
+
+        .message.user {
+            background-color: #e0f7fa;
+            padding: 8px;
+            border-radius: 5px;
+            margin: 5px 0;
+            text-align: right;
+        }
+
+        .message.bot {
+            background-color: #fff3e0;
+            padding: 8px;
+            border-radius: 5px;
+            margin: 5px 0;
+            text-align: left;
+        }
+
+        .loading {
+            font-style: italic;
+            font-size: small;
+        }
+
+        @media (max-width: 600px) {
+            .chatbot-box {
+                width: 100%;
+                height: 50%;
+                bottom: 0;
+                right: 0;
+                border-radius: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="chatbot-container" role="complementary">
+        <button id="chatbot-toggle" class="chatbot-toggle" aria-label="Open chatbot">
+            <span class="chatbot-toggle-icon">💬</span>
+        </button>
+        <div id="chatbot-box" class="chatbot-box hidden" role="dialog" aria-labelledby="chatbot-label">
+            <div class="chatbot-header">
+                <h3 id="chatbot-label">Greywolfx support</h3>
+                <button id="chatbot-close" class="chatbot-close" aria-label="Close chatbot">&times;</button>
+            </div>
+            <div id="chatbot-messages" class="chatbot-messages" aria-live="polite">
+                <!-- Messages will be inserted here -->
+            </div>
+            <form id="chatbot-form" class="chatbot-form" aria-label="Chatbot Form">
+                <label for="chatbot-input" class="sr-only">Message</label>
+                <input type="text" id="chatbot-input" placeholder="Type your message..." required maxlength="100">
+                <button type="submit">Send</button>
+            </form>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const chatbotToggle = document.getElementById('chatbot-toggle');
+            const chatbotBox = document.getElementById('chatbot-box');
+            const chatbotClose = document.getElementById('chatbot-close');
+            const chatbotForm = document.getElementById('chatbot-form');
+            const chatbotInput = document.getElementById('chatbot-input');
+            const chatbotMessages = document.getElementById('chatbot-messages');
+
+
+            chatbotToggle.addEventListener('click', function () {
+                chatbotBox.classList.toggle('hidden');
+            });
+
+            chatbotClose.addEventListener('click', function () {
+                chatbotBox.classList.add('hidden');
+            });
+
+            chatbotForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+                const message = chatbotInput.value.trim();
+                if (message) {
+                    addMessage('user', message);
+                    chatbotInput.value = '';
+                    addLoadingMessage();
+
+
+                    // Send the message to Django backend with JSON
+                    fetch('/frontend/chatbot-response/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCookie('csrftoken')
+                        },
+                        body: JSON.stringify({ 'message': message })
+                    })
+                        .then(response => {
+                            const contentType = response.headers.get("content-type");
+
+                            // Check if the response is valid JSON
+                            if (response.ok && contentType && contentType.includes("application/json")) {
+                                return response.json();
+                            } else if (!response.ok) {
+                                // If there's an error response from the server, try to parse it as JSON
+                                return response.json().then(data => {
+                                    throw new Error(data.error || "Server returned an error");
+                                });
+                            } else {
+                                // If the response is not JSON
+                                throw new Error("Received non-JSON response");
+                            }
+                        })
+                        .then(data => {
+                            removeLoadingMessage();
+                            addMessage('bot', data.response);
+                        })
+                        .catch(error => {
+                            removeLoadingMessage();
+                            addMessage('bot', `Sorry, there was an error: ${error.message}`);
+                            console.error('Error:', error);
+                        });
+                }
+            });
+
+            function addMessage(sender, message) {
+                const messageElement = document.createElement('div');
+                messageElement.classList.add('message', sender);
+                messageElement.textContent = message;
+                chatbotMessages.appendChild(messageElement);
+                chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+            }
+
+            function addLoadingMessage() {
+                const loadingElement = document.createElement('div');
+                loadingElement.classList.add('message', 'bot', 'loading');
+                loadingElement.textContent = 'typing...';
+                chatbotMessages.appendChild(loadingElement);
+                chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+            }
+
+            function removeLoadingMessage() {
+                const loadingElement = chatbotMessages.querySelector('.loading');
+                if (loadingElement) {
+                    loadingElement.remove();
+                }
+            }
+
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+        });
+
+    </script>
+
+</body>
+
+</html>

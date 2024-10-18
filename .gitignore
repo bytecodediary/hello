@@ -16,3 +16,6 @@ payment/migrations/__pycache__/
 order/migrations/__pycache__/
 main/__pycache__/
 listing/migrations/__pycache__/
+frontend/__pycache__/
+frontend/__pycache__/
+main/__pycache__/
