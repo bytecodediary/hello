@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     "order",
     "payment",
     'core',
+    'frontend',
 
 ]
 
