@@ -1,9 +1,7 @@
-
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
-    <link rel="stylesheet" href="styles.css">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -96,7 +94,6 @@
             border-radius: 4px;
             margin-right: 5px;
             max-width: 80%;
-            /* Limit input width */
         }
 
         .chatbot-form button {
@@ -143,29 +140,22 @@
             }
         }
     </style>
-</head>
-
-<body>
-    <div class="chatbot-container" role="complementary">
-        <button id="chatbot-toggle" class="chatbot-toggle" aria-label="Open chatbot">
-            <span class="chatbot-toggle-icon">💬</span>
-        </button>
-        <div id="chatbot-box" class="chatbot-box hidden" role="dialog" aria-labelledby="chatbot-label">
-            <div class="chatbot-header">
-                <h3 id="chatbot-label">Greywolfx support</h3>
-                <button id="chatbot-close" class="chatbot-close" aria-label="Close chatbot">&times;</button>
-            </div>
-            <div id="chatbot-messages" class="chatbot-messages" aria-live="polite">
-                <!-- Messages will be inserted here -->
-            </div>
-            <form id="chatbot-form" class="chatbot-form" aria-label="Chatbot Form">
-                <label for="chatbot-input" class="sr-only">Message</label>
-                <input type="text" id="chatbot-input" placeholder="Type your message..." required maxlength="100">
-                <button type="submit">Send</button>
-            </form>
-        </div>
-    </div>
     <script>
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
         document.addEventListener('DOMContentLoaded', function () {
             const chatbotToggle = document.getElementById('chatbot-toggle');
             const chatbotBox = document.getElementById('chatbot-box');
@@ -173,7 +163,6 @@
             const chatbotForm = document.getElementById('chatbot-form');
             const chatbotInput = document.getElementById('chatbot-input');
             const chatbotMessages = document.getElementById('chatbot-messages');
-
 
             chatbotToggle.addEventListener('click', function () {
                 chatbotBox.classList.toggle('hidden');
@@ -191,41 +180,32 @@
                     chatbotInput.value = '';
                     addLoadingMessage();
 
+                    const csrfToken = getCookie('csrftoken');
 
-                    // Send the message to Django backend with JSON
-                    fetch('/frontend/chatbot-response/', {
-                        method: 'POST',
+                    fetch("/frontend/chatbot-response/", {
+                        method: "POST",
                         headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRFToken': getCookie('csrftoken')
+                            "Content-Type": "application/json",
+                            "X-CSRFToken": csrfToken
                         },
-                        body: JSON.stringify({ 'message': message })
+                        body: JSON.stringify({ "message": message }),
+                        credentials: "include"
                     })
-                        .then(response => {
-                            const contentType = response.headers.get("content-type");
-
-                            // Check if the response is valid JSON
-                            if (response.ok && contentType && contentType.includes("application/json")) {
-                                return response.json();
-                            } else if (!response.ok) {
-                                // If there's an error response from the server, try to parse it as JSON
-                                return response.json().then(data => {
-                                    throw new Error(data.error || "Server returned an error");
-                                });
-                            } else {
-                                // If the response is not JSON
-                                throw new Error("Received non-JSON response");
-                            }
-                        })
-                        .then(data => {
-                            removeLoadingMessage();
-                            addMessage('bot', data.response);
-                        })
-                        .catch(error => {
-                            removeLoadingMessage();
-                            addMessage('bot', `Sorry, there was an error: ${error.message}`);
-                            console.error('Error:', error);
-                        });
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok ' + response.statusText);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        removeLoadingMessage();
+                        addMessage('bot', data.response);
+                    })
+                    .catch(error => {
+                        removeLoadingMessage();
+                        addMessage('bot', `Sorry, there was an error: ${error.message}`);
+                        console.error('Error:', error);
+                    });
                 }
             });
 
@@ -251,25 +231,30 @@
                     loadingElement.remove();
                 }
             }
-
-            function getCookie(name) {
-                let cookieValue = null;
-                if (document.cookie && document.cookie !== '') {
-                    const cookies = document.cookie.split(';');
-                    for (let i = 0; i < cookies.length; i++) {
-                        const cookie = cookies[i].trim();
-                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                            break;
-                        }
-                    }
-                }
-                return cookieValue;
-            }
         });
-
     </script>
+</head>
 
+<body>
+    <div class="chatbot-container" role="complementary">
+        <button id="chatbot-toggle" class="chatbot-toggle" aria-label="Open chatbot">
+            <span class="chatbot-toggle-icon">💬</span>
+        </button>
+        <div id="chatbot-box" class="chatbot-box hidden" role="dialog" aria-labelledby="chatbot-label">
+            <div class="chatbot-header">
+                <h3 id="chatbot-label">Greywolfx support</h3>
+                <button id="chatbot-close" class="chatbot-close" aria-label="Close chatbot">&times;</button>
+            </div>
+            <div id="chatbot-messages" class="chatbot-messages" aria-live="polite">
+                <!-- Messages will be inserted here -->
+            </div>
+            <form id="chatbot-form" class="chatbot-form" aria-label="Chatbot Form">
+                <label for="chatbot-input" class="sr-only">Message</label>
+                <input type="text" id="chatbot-input" placeholder="Type your message..." required maxlength="100">
+                <button type="submit">Send</button>
+            </form>
+        </div>
+    </div>
 </body>
 
 </html>

@@ -2,6 +2,9 @@ from rest_framework import generics, permissions, status
 from .models import Client, Agent, Owner, CustomUser
 from .serializers import AgentSerializer, ClientSerializer, OwnerSerializer, ChangeUserTypeSerializer, CustomUserSerializer, LoginSerializer
 from rest_framework.response import Response
+from django.http import JsonResponse
+from django.middleware.csrf import get_token
+
 
 #custom user views
 class ChangeUserTypeView(generics.UpdateAPIView):
@@ -14,21 +17,25 @@ class ChangeUserTypeView(generics.UpdateAPIView):
     
 class UserRegistrationView(generics.CreateAPIView):
     queryset = CustomUser.objects.all()
-    serializer_class =CustomUserSerializer
+    serializer_class = CustomUserSerializer
     permission_classes = [permissions.AllowAny]
+    
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
+        # Return validation errors instead of data on failure
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class UserLoginView(generics.GenericAPIView):
     serializer_class = LoginSerializer
     queryset = CustomUser.objects.all()
+    permission_classes = [permissions.AllowAny]
 
     def post(self, request, *args, **kwargs):
+        # print("Received request data:", request.data) 
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             user = serializer.validated_data['user']
@@ -40,6 +47,7 @@ class UserLoginView(generics.GenericAPIView):
                     'last_name': user.last_name,
                 }
             }, status=status.HTTP_200_OK)
+        # print("Serializer errors:", serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -67,3 +75,9 @@ class OwnerProfileView(generics.GenericAPIView):
 
     def get_objects(self):
         return self.request.user.owner
+
+
+def get_csrf_token(request):
+    csrf_token = get_token(request)
+    return JsonResponse({"csrfToken": csrf_token})
+

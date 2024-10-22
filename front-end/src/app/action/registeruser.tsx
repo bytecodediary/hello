@@ -1,6 +1,6 @@
 "use server";
 
-export async function registerUser(formData: FormData) {
+export async function registerUser(formData: FormData, csrfToken: string) {
   try {
     // Log the registration attempt
     console.log(
@@ -8,10 +8,14 @@ export async function registerUser(formData: FormData) {
       Array.from(formData.entries())
     );
 
-    // Fetch request to the Django backend
+    // Fetch request to the Django backend with CSRF token
     const response = await fetch("http://127.0.0.1:8000/register/", {
       method: "POST",
+      headers: {
+        "X-CSRFToken": csrfToken, // Add CSRF token in the header
+      },
       body: formData,
+      credentials: "include",
     });
 
     console.log("Server response status:", response.status);

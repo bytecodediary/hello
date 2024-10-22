@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'frontend',
 
 ]
+CORS_ALLOW_ALL_ORIGINS = True
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
@@ -67,14 +68,14 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     #video added user_api.apps 1:53
 ]
-
+MODEL_PATH = r'C:\Users\lawrence.wafula\git\hello\frontend\model.keras'
 
 ROOT_URLCONF = "main.urls"
 
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [BASE_DIR / 'templates'],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -87,7 +88,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "main.wsgi.application"
+WSGI_APPLICATION = "main.wsgi.application" 
 AUTH_USER_MODEL = "user.CustomUser"
 
 REST_FRAMEWORK = {
@@ -137,6 +138,7 @@ DATABASES = {
     }
 }
 
+APPEND_SLASH=False
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -182,11 +184,11 @@ STATICFILES_DIRS = [
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
-LOGIN_URL = "main:login"
-LOGOUT_URL = "main:logout"
+LOGIN_URL = "login"
+LOGOUT_URL = "logout"
 
-LOGIN_REDIRECT_URL = "main:home"
-LOGOUT_REDIRECT_URL = "main:home"
+# LOGIN_REDIRECT_URL = "home"
+# LOGOUT_REDIRECT_URL = "home"
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
