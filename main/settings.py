@@ -55,7 +55,7 @@ INSTALLED_APPS = [
     'frontend',
 
 ]
-CORS_ALLOW_ALL_ORIGINS = True
+# CORS_ALLOW_ALL_ORIGINS = True
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",

@@ -1,0 +1,2 @@
+cd C:\Users\lawrence.wafula\Documents\node-v20.18.0-win-x64\node-v20.18.0-win-x64
+set PATH=%PATH%;C:\Users\lawrence.wafula\Documents\node-v20.18.0-win-x64\node-v20.18.0-win-x64
