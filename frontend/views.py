@@ -6,12 +6,15 @@ import logging
 import os
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
+from django.conf import settings
+
+# Define the model path using OS-independent format
+model_path = settings.MODEL_PATH
 
 # Configure logging
 logger = logging.getLogger('frontend')
 
-# Define the model path using OS-independent format
-model_path = r'C:\Users\lawrence.wafula\git\hello\frontend\model.keras'
+
 
 # Check if the path exists
 if not os.path.exists(model_path):
@@ -27,45 +30,54 @@ model = AutoModelForCausalLM.from_pretrained("gpt2")  # Change to the appropriat
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model.to(device)
 
-@login_required
 def get_chatbot_response(request):
     if request.method == 'POST':
         try:
-            # Load JSON data from the request body
             body = json.loads(request.body)
             user_input = body.get('message', '')
 
-            # Validate input
             if not user_input:
-                logger.warning("Received an empty message from the user.")
                 return JsonResponse({'error': 'Message is empty'}, status=400)
 
-            logger.info(f"Received message: {user_input}")
+            # Prepare input
+            input_ids = tokenizer.encode(user_input, return_tensors='pt')
 
-            # Tokenize input and generate a response
-            input_ids = tokenizer.encode(user_input, return_tensors='pt').to(device)  # Move input tensor to GPU
+            # Create attention mask
+            attention_mask = (input_ids != tokenizer.pad_token_id).float() # Use float()
+
+            # Ensure pad_token_id is properly set
+            if tokenizer.pad_token_id is None:
+                logger.error('tokenizer.pad_token_id is not set')
+                return JsonResponse({'error': 'Tokenizer pad_token_id is not set'}, status=500)
+
+            
+            # Move tensors to the appropriate device
+            input_ids = input_ids.to(device)
+            attention_mask = attention_mask.to(device)
+
+            # Generate response
             output = model.generate(
                 input_ids,
-                max_length=100,
-                num_beams=4,
+                attention_mask=attention_mask,
+                max_length=50,  # Reducing max_length
+                temperature=0.7,  # Controls randomness
+                top_p=0.9,  # Top-p (nucleus) sampling
                 no_repeat_ngram_size=2,
                 early_stopping=True
             )
-
-            # Decode the model output
             bot_response = tokenizer.decode(output[0], skip_special_tokens=True)
 
-            logger.info(f"Generated response: {bot_response}")
+            # Simple post-processing to filter out unwanted content
+            if 'http' in bot_response or len(bot_response.strip()) == 0:
+                bot_response = "Sorry, I don't understand that."
 
             return JsonResponse({'response': bot_response})
 
         except Exception as e:
-            # Log the error for debugging purposes
             logger.error(f"Error in get_chatbot_response: {str(e)}")
-            return JsonResponse({'error': 'An error occurred while processing your request. Please try again later.'}, status=500)
+            return JsonResponse({'error': 'An error occurred while processing your request.'}, status=500)
     else:
-        logger.warning("Invalid request method received.")
         return JsonResponse({'error': 'Invalid request method'}, status=400)
-
+    
 def home(request):
     return render(request, 'frontend/chatbot.html')

@@ -5,7 +5,6 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
-namespace = 'main'
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -17,5 +16,5 @@ urlpatterns = [
     path('payment', include('payment.urls')),
     path('user', include('user.urls')),
     path('user/', include('user.urls')),
-    path('frontend', include("frontend.urls")),
+    path('frontend/', include("frontend.urls")),
 ]

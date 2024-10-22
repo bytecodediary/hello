@@ -1,15 +1,30 @@
 "use server";
 
-export async function loginUser(formData: FormData) {
+export async function loginUser(formData: FormData, csrfToken: string) {
   const email = formData.get("email");
   const password = formData.get("password");
 
-  // In a real application, you would validate the credentials here
-  console.log("Login attempt:", { email, password });
+  try {
+    const response = await fetch("http://127.0.0.1:8000/login/", {
+      method: "POST",
+      headers: {
+        "X-CSRFToken": csrfToken, // Include CSRF token in the request header
+      },
+      body: formData,
+      credentials: "include",
+    });
 
-  // Simulate a delay to mimic an API call
-  await new Promise((resolve) => setTimeout(resolve, 1000));
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(
+        errorData.detail || "An unexpected error occurred during login"
+      );
+    }
 
-  // Return a dummy result
-  return { success: true, message: "Login successful" };
+    const result = await response.json();
+    return { success: true, message: result.message || "Login successful" };
+  } catch (error) {
+    console.error("Login error:", error);
+    throw error;
+  }
 }

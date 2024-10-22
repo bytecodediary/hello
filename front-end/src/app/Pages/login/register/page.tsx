@@ -1,6 +1,6 @@
 "use client"; // Client-side component
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/app/Components/ui/Button";
 import Input from "@/app/Components/ui/Input";
@@ -19,6 +19,21 @@ export default function RegisterPage() {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
+
+  const [csrfToken, setCsrfToken] = useState<string>("");
+
+  useEffect(() => {
+    // Fetch CSRF token when the component mounts
+    const fetchCsrfToken = async () => {
+      const res = await fetch("/get-csrf-token", {
+        method: "GET",
+        credentials: "include",
+      });
+      const data = await res.json();
+      setCsrfToken(data.csrfToken);
+    };
+    fetchCsrfToken();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault(); // Prevent default form submission
@@ -41,7 +56,7 @@ export default function RegisterPage() {
     formData.append("confirmPassword", confirmPassword);
 
     try {
-      const result = await registerUser(formData);
+      const result = await registerUser(formData, csrfToken);
       setMessage(result.message);
       setTimeout(() => {
         router.push("/login");

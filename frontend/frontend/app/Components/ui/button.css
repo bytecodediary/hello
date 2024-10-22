@@ -1,0 +1,33 @@
+/* General button styles */
+.button {
+  padding: 10px 20px;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 15px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+/* Primary button (red background) */
+.button.primary {
+  background-color: #bdb0c7;
+  color: #0e140e;
+  padding: 0 50px 0 60px;
+}
+
+/* Secondary button (outlined white background) */
+.button.secondary {
+  background-color: #6f9972;
+  color: #0e140e;
+}
+
+
+/* Hover effects */
+.button.primary:hover {
+  background-color: #e53935;
+}
+
+.button.secondary:hover {
+  background-color: #f5f5f5;
+}
