@@ -23,7 +23,6 @@ def slug_in_any_model(slug):
         "order.CartItem".objects.filter(slug=slug).exists()
     )
 
-
 class Property(models.Model):
     status_choices =(
     ("sold", "Sold"),
@@ -84,4 +83,3 @@ class Notification(models.Model):
 
     def __str__(self):
         return self.message[:50]
-

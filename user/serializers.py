@@ -50,7 +50,7 @@ class LoginSerializer(serializers.Serializer):  # Use Serializer instead of Mode
         email = data.get('email')  # Use parentheses instead of brackets
         password = data.get('password')
 
-        print(f"attempting to validate with: {email}")
+        # print(f"attempting to validate with: {email}")
         # Authenticate the user
         user = authenticate(request=self.context.get('request'), username=email, password=password)
 

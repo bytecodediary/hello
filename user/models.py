@@ -89,3 +89,15 @@ class Agent(models.Model):
             return ValidationError("Age is below 22 years")
         return self.dob
  
+class Tenant(models.Model):
+    name = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
+    email = models.EmailField()
+    phone_number = PhoneNumberField(unique=True, blank=False, null=False)
+    lease_agreement = models.CharField(max_length=255)
+    rent_status = models.ForeignKey("payment.Payment", on_delete=models.CASCADE)
+
+    def has_paid(self):
+        return self.name.user_payments.filter(default="mpesa",).exists()
+
+    def __str__(self):
+        return self.name.username
