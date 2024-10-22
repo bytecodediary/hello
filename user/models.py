@@ -4,6 +4,7 @@ import uuid
 from phonenumber_field.modelfields import PhoneNumberField
 import datetime
 from django.forms import ValidationError
+import timezone
 
 class CustomUserManager(BaseUserManager):
     def create_user(self, email,password=None, default='customer', **extra_fields):
@@ -37,7 +38,6 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=True)
     is_pending_type_change = models.BooleanField(default=False)
     date_joined = models.DateTimeField(auto_now_add=True)
-
 
     objects = CustomUserManager()
 
@@ -96,8 +96,39 @@ class Tenant(models.Model):
     lease_agreement = models.CharField(max_length=255)
     rent_status = models.ForeignKey("payment.Payment", on_delete=models.CASCADE)
 
+    @property
     def has_paid(self):
-        return self.name.user_payments.filter(default="mpesa",).exists()
+        return self.name.user_payments.filter(payment_mode="mpesa",).exists()
 
     def __str__(self):
         return self.name.username
+
+class Verification(models.Model):
+    STATUS = [
+        ['pending', 'Pending'],
+        ['verified', 'Verified'],
+        ['rejected', 'Rejected'],
+    ]
+    
+    status = models.CharField(default="pending", max_length=2, choices=STATUS)
+    created_at = models.DateTimeField(auto_now_add=True)
+    token = models.UUIDField(editable=False, default=uuid.uuid5, primary_key=True)
+    is_verified = models.BooleanField(default=False)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    expires = models.DateTimeField()
+
+    def save(self, *args, **kwargs):
+        if not self.expires:
+            self.expires = datetime.now + datetime.timedelta(days=1)
+        super.save(*args, **kwargs)
+    
+    def is_token_expired(self):
+        return self.expires > timezone.now() and not self.is_verified
+    
+    def is_failed(self):
+        if self.expires < timezone.now()  and not self.is_verified:
+            self.status == "rejected"
+        return self.status
+    
+    def __str__(self):
+        return f"verified {self.user.email} - {"verified" if self.is_verified else "pending"}"

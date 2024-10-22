@@ -1,6 +1,5 @@
 from django.db import models
 
-
 class Payment(models.Model):
     PaymentModes = (
     ('bank', 'Bank'),
@@ -17,6 +16,7 @@ class Payment(models.Model):
     added_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     slug = models.SlugField(unique=True, blank=True)
+    property_paid_for = models.ForeignKey("listing.Property", on_delete=models.CASCADE, related_name="property_payments")
 
     def __str__(self):
         return f"{self.payment_mode} by {self.user.username}"
@@ -25,7 +25,6 @@ class Payment(models.Model):
         if not self.slug: 
             self.slug = property.generate_unique_slug()
         super().save(*args, **kwargs)
-
 
 class Transaction(models.Model):
     Status_Types = (
