@@ -4,7 +4,7 @@ from .serializers import AgentSerializer, ClientSerializer, OwnerSerializer, Cha
 from rest_framework.response import Response
 from django.http import JsonResponse
 from django.middleware.csrf import get_token
-
+from rest_framework.decorators import api_view
 
 #custom user views
 class ChangeUserTypeView(generics.UpdateAPIView):
@@ -88,6 +88,13 @@ def get_csrf_token(request):
     csrf_token = get_token(request)
     return JsonResponse({"csrfToken": csrf_token})
 
+
+@api_view(['GET'])
+def check_authentification(request):
+    if request.user.is_authenticated:
+        return Response({"authenticated":True, "username": request.user.username})
+    return Response({"authenticated": False})
+  
 class VerificationView(generics.GenericAPIView):
     serializer_class = VerificationSerializer
     queryset = Verification.objects.all()
@@ -111,3 +118,4 @@ class VerificationView(generics.GenericAPIView):
 
     def get_objects(self):
         return self.request.user.verification.status
+
