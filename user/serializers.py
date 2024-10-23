@@ -1,6 +1,10 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate
-from .models import Agent, Client, Owner, CustomUser, Verification, Tenant
+
+from .models import Agent, Client, Owner, CustomUser, Verification, Appointment, Tenant
+
+
+
 
 class OwnerSerializer(serializers.ModelSerializer):
     property_details = serializers.SerializerMethodField()
@@ -74,6 +78,28 @@ class ClientSerializer(serializers.ModelSerializer):
         model = Client
         fields = ['id', 'tenant', 'phone_number', 'has_paid']
 
+    
+class VerificationSerializer(serializers.ModelSerializer):
+    user = CustomUserSerializer(source='CustomUser.username', read_only=True)
+    class Meta:
+        model = Verification
+        fields = ['id', 'status', 'created_at', 'token', 'is_verified', 'user', 'expires']
+
+class TenantSerializer(serializers.ModelSerializer):
+    name = CustomUserSerializer(source='CustomUser.username', read_only=True)
+
+    class Meta:
+        model = Tenant 
+        fields = ['name', 'email', 'phone_number', 'lease_agreement', 'rent_status']       
+
+class AppointmentSerializer(serializers.ModelSerializer):
+    user = CustomUserSerializer(source="CustomUser.username", read_only=True)
+
+    class Meta:
+        model = Appointment
+        fields = ["user", "appointment_date", "appointment_status", "set_at", "property_set", "purpose"]
+
+
 class VerificationSerializer(model.ModelSerializer):
 
     class Meta:
@@ -109,3 +135,4 @@ class TenantSerializer(serializer.ModelSerializer):
     class  Meta:
         model = Tenant
         fields = ['user', 'name', 'email', 'phone_number', 'lease_agreement', 'rent_status']
+
