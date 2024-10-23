@@ -132,3 +132,29 @@ class Verification(models.Model):
     
     def __str__(self):
         return f"verified {self.user.email} - {"verified" if self.is_verified else "pending"}"
+
+class Appointment(models.Model):
+    STATUS = [
+        ['pending', 'Pending'],
+        ['failed', 'failed'],
+        ['successful', 'Successful'],
+        ['unset', 'Unset'],
+    ]
+
+    appointment_status = models.CharField(max_length=20, default='unset', choices=STATUS )
+    appointment_date = models.DateTimeField()
+    set_at = models.DateTimeField(auto_now_add=True)
+    property_set = models.ForeignKey('listing.Property', on_delete=models.CASCADE, related_name='appointment_property')
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    purpose = models.CharField(max_length=300)
+
+    def clean_appointment_date(self):
+        if self.appointment_date > timezone.now + datetime.timedelta(days=1):
+            if not self.appointment_date:
+                self.appointment_date = timezone.now() + datetime.timedelta(days=1)
+            
+            
+        return self.appointment_date
+
+    def __str__(self):
+        return self.user.username
