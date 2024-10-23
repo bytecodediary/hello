@@ -1,6 +1,6 @@
 from rest_framework import generics, permissions, status
 from .models import Client, Agent, Owner, CustomUser
-from .serializers import AgentSerializer, ClientSerializer, OwnerSerializer, ChangeUserTypeSerializer, CustomUserSerializer, LoginSerializer
+from .serializers import AgentSerializer, ClientSerializer, OwnerSerializer, ChangeUserTypeSerializer, CustomUserSerializer, LoginSerializer, VerificationSerializer, TenantSerializer
 from rest_framework.response import Response
 from django.http import JsonResponse
 from django.middleware.csrf import get_token
@@ -76,13 +76,46 @@ class OwnerProfileView(generics.GenericAPIView):
     def get_objects(self):
         return self.request.user.owner
 
+class TenantProfileView(generics.GenericAPIView):
+    queryset = Tenant.objects.all()
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = TenantSerializer
+
+    def get_objects(self):
+        return self.request.user.agent
 
 def get_csrf_token(request):
     csrf_token = get_token(request)
     return JsonResponse({"csrfToken": csrf_token})
+
 
 @api_view(['GET'])
 def check_authentification(request):
     if request.user.is_authenticated:
         return Response({"authenticated":True, "username": request.user.username})
     return Response({"authenticated": False})
+  
+class VerificationView(generics.GenericAPIView):
+    serializer_class = VerificationSerializer
+    queryset = Verification.objects.all()
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        token = request.data.get('token', None)
+        if not token:
+            return Response({'error': 'Verification token is required'}, status=status.HTTP_400_BAD_REQUEST)
+        verification = self.get_objects().filter(token=token).first()
+
+        serializer = VerificationSerializer(verification, token=token)
+
+        if serializer.is_valid():
+            verification.is_verified = True
+            verification.save()
+            return Response({'message': 'User verification successful', 'status':serializer.data['status']}, status=status.HTTP_200_OK)
+        else:
+            verification.is_verified = False
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def get_objects(self):
+        return self.request.user.verification.status
+
