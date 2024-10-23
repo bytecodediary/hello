@@ -102,8 +102,8 @@ class VerificationView(generics.CreateAPIView):
         else:
             instance.status = "failed"
 
-    def get_objects(self):
-        return f"{self.request.user.username} - {"verified" if self.instance.is_verified else "pending"}"
+    # def get_objects(self):
+    #     return f"{self.request.user.username} - {"verified" if self.instance.is_verified else "pending"}"
 
 class AppointmentView(generics.GenericAPIView):
     queryset = Appointment.objects.all()

@@ -80,7 +80,7 @@ class VerificationSerializer(serializers.ModelSerializer):
         model = Verification
         fields = ['id', 'status', 'created_at', 'token', 'is_verified', 'user', 'expires']
 
-class TenantSerializer(serializers.ModelSeialzier):
+class TenantSerializer(serializers.ModelSerializer):
     name = CustomUserSerializer(source='CustomUser.username', read_only=True)
 
     class Meta:

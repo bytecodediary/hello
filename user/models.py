@@ -4,7 +4,7 @@ import uuid
 from phonenumber_field.modelfields import PhoneNumberField
 import datetime
 from django.forms import ValidationError
-import timezone
+# import timezone
 
 class CustomUserManager(BaseUserManager):
     def create_user(self, email,password=None, default='customer', **extra_fields):
@@ -110,7 +110,7 @@ class Verification(models.Model):
         ['rejected', 'Rejected'],
     ]
     
-    status = models.CharField(default="pending", max_length=2, choices=STATUS)
+    status = models.CharField(default="pending", max_length=20, choices=STATUS)
     created_at = models.DateTimeField(auto_now_add=True)
     token = models.UUIDField(editable=False, default=uuid.uuid5, primary_key=True)
     is_verified = models.BooleanField(default=False)
@@ -123,15 +123,15 @@ class Verification(models.Model):
         super.save(*args, **kwargs)
     
     def is_token_expired(self):
-        return self.expires > timezone.now() and not self.is_verified
+        return self.expires > datetime.now() and not self.is_verified
     
     def is_failed(self):
-        if self.expires < timezone.now()  and not self.is_verified:
+        if self.expires < datetime.now()  and not self.is_verified:
             self.status == "rejected"
         return self.status
     
-    def __str__(self):
-        return f"verified {self.user.email} - {"verified" if self.is_verified else "pending"}"
+    # def __str__(self):
+    #     return f"verified {self.user.email} - {"verified" if self.is_verified else "pending"}"
 
 class Appointment(models.Model):
     STATUS = [
@@ -149,9 +149,9 @@ class Appointment(models.Model):
     purpose = models.CharField(max_length=300)
 
     def clean_appointment_date(self):
-        if self.appointment_date > timezone.now + datetime.timedelta(days=1):
+        if self.appointment_date > datetime.timezone.now + datetime.timedelta(days=1):
             if not self.appointment_date:
-                self.appointment_date = timezone.now() + datetime.timedelta(days=1)
+                self.appointment_date = datetime.timezone.now() + datetime.timedelta(days=1)
             
             
         return self.appointment_date
