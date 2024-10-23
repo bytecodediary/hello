@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate
-from .models import Agent, Client, Owner, CustomUser
+from .models import Agent, Client, Owner, CustomUser, Verification, Tenant
 
 class OwnerSerializer(serializers.ModelSerializer):
     property_details = serializers.SerializerMethodField()
@@ -73,4 +73,39 @@ class ClientSerializer(serializers.ModelSerializer):
     class Meta:
         model = Client
         fields = ['id', 'tenant', 'phone_number', 'has_paid']
+
+class VerificationSerializer(model.ModelSerializer):
+
+    class Meta:
+        model = Verification
+        fields = ['status', 'token', 'is_verified', 'expires', 'created_at', 'user']
+        read_only_fields = ['token', 'is_verified', 'created_at']
     
+    def validate(self, data):
+        verification_instance = self.instance
+        if verification_instance:
+            if verification_instance.is_token_expired():
+                raise serializers.ValidationError('Token expired')
+            
+            if verification_instance and verification_instance.is_verified:
+                raise serializers.ValidationError('User with this token already verified')
+
+        return data
+    def save(self, **kwargs):
+        instance = super().save(**kwargs)
+        if not instance.is_verified and not instance.is_token_expired():
+            instance.is_verified = True
+            instance.status = "verified"
+        elif not instance.is_verified and instance.is_token_expired():
+            instance.status = "rejected"
+        else:
+            instance.status = "pending"
+        instance.save()
+        return instance
+
+class TenantSerializer(serializer.ModelSerializer):
+    user = CustomUserSerializer(source="CustomUser.username", read_only=True)
+
+    class  Meta:
+        model = Tenant
+        fields = ['user', 'name', 'email', 'phone_number', 'lease_agreement', 'rent_status']

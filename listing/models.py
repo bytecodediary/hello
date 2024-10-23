@@ -40,7 +40,6 @@ class Property(models.Model):
     stock = models.IntegerField(default=1)
     slug = models.SlugField(unique=True, blank=True)
     
-
     def __str__(self):
         return self.title
     
