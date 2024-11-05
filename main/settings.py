@@ -55,7 +55,7 @@ INSTALLED_APPS = [
     'frontend',
 
 ]
-# CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ALL_ORIGINS = True
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
@@ -68,7 +68,6 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     #video added user_api.apps 1:53
 ]
-MODEL_PATH = r'C:\Users\lawrence.wafula\git\hello\frontend\model.keras'
 
 ROOT_URLCONF = "main.urls"
 
