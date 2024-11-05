@@ -1,10 +1,18 @@
 from rest_framework import generics, permissions, status
+
+from .models import Client, Agent, Owner, CustomUser, Tenant, Verification, Appointment
+from .serializers import AgentSerializer, ClientSerializer, OwnerSerializer, ChangeUserTypeSerializer, CustomUserSerializer, LoginSerializer, TenantSerializer, AppointmentSerializer, VerificationSerializer
+from rest_framework.response import Response
+from django.http import JsonResponse
+from django.middleware.csrf import get_token
+
 from .models import Client, Agent, Owner, CustomUser
 from .serializers import AgentSerializer, ClientSerializer, OwnerSerializer, ChangeUserTypeSerializer, CustomUserSerializer, LoginSerializer, VerificationSerializer, TenantSerializer
 from rest_framework.response import Response
 from django.http import JsonResponse
 from django.middleware.csrf import get_token
 from rest_framework.decorators import api_view
+
 
 #custom user views
 class ChangeUserTypeView(generics.UpdateAPIView):
@@ -20,7 +28,6 @@ class UserRegistrationView(generics.CreateAPIView):
     serializer_class = CustomUserSerializer
     permission_classes = [permissions.AllowAny]
     
-
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
@@ -49,8 +56,7 @@ class UserLoginView(generics.GenericAPIView):
             }, status=status.HTTP_200_OK)
         # print("Serializer errors:", serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
+    
 #profiles
 class AgentProfileView(generics.GenericAPIView):
     queryset = Agent.objects.all()
@@ -76,6 +82,8 @@ class OwnerProfileView(generics.GenericAPIView):
     def get_objects(self):
         return self.request.user.owner
 
+
+
 class TenantProfileView(generics.GenericAPIView):
     queryset = Tenant.objects.all()
     permission_classes = [permissions.IsAuthenticated]
@@ -84,9 +92,23 @@ class TenantProfileView(generics.GenericAPIView):
     def get_objects(self):
         return self.request.user.agent
 
+
 def get_csrf_token(request):
     csrf_token = get_token(request)
     return JsonResponse({"csrfToken": csrf_token})
+
+    
+
+
+   
+
+class AppointmentView(generics.GenericAPIView):
+    queryset = Appointment.objects.all()
+    serializer_class = AppointmentSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_objects(self):
+        return self.request.user.username
 
 
 @api_view(['GET'])
@@ -118,4 +140,5 @@ class VerificationView(generics.GenericAPIView):
 
     def get_objects(self):
         return self.request.user.verification.status
+
 
