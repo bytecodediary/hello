@@ -11,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/app/Components/ui/select";
+import PaginationBar from "@/app/Components/Pagination";
 
 export default function Buy() {
   const [fix, setFix] = useState(false);
@@ -76,7 +77,9 @@ export default function Buy() {
             </div>
             <CardProperties />
           </div>
+          {/* <PaginationBar currentPage={2} totalPages={99} /> */}
         </div>
+        
       </section>
       {/* <Footer /> */}
     </div>
