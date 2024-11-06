@@ -162,25 +162,3 @@ class Appointment(models.Model):
         return self.user.username
         return self.user.email
 
-class Appointment(models.Model):
-    STATUS = [
-        ['successfull', 'Successfull'],
-        ['cancelled', 'cancelled'],
-        ['pending', 'pending'],
-    ]
-    name = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="user_appointments")
-    set_at = models.DateTimeField(auto_now_add=True)
-    appointment_status = models.CharField(default="pending",max_length=2, choices=STATUS)
-    appointment_time = models.DateTimeField()
-    purpose = models.CharField(max_length=300)
-    property_name = models.ForeignKey("listing.Property", on_delete=models.CASCADE, related_name="appointment_property")
-
-    # optimal function solution this one,i will impliment a better soltion later
-    def appointment_time(self):
-        if appointment_time > set_at:
-            self.appointment_time = appointment_time
-        return self.appointment_time
-        
-    def __str__(self):
-        return self.name.username
-
