@@ -4,11 +4,7 @@ from .serializers import AgentSerializer, ClientSerializer, OwnerSerializer, Cha
 from rest_framework.response import Response
 from django.http import JsonResponse
 from django.middleware.csrf import get_token
-from .models import Client, Agent, Owner, CustomUser
 from .serializers import AgentSerializer, ClientSerializer, OwnerSerializer, ChangeUserTypeSerializer, CustomUserSerializer, LoginSerializer, VerificationSerializer, TenantSerializer  # noqa: F811
-from rest_framework.response import Response
-from django.http import JsonResponse
-from django.middleware.csrf import get_token
 from rest_framework.decorators import api_view
 
 #custom user views
@@ -79,8 +75,6 @@ class OwnerProfileView(generics.GenericAPIView):
     def get_objects(self):
         return self.request.user.owner
 
-
-
 class TenantProfileView(generics.GenericAPIView):
     queryset = Tenant.objects.all()
     permission_classes = [permissions.IsAuthenticated]
@@ -93,7 +87,6 @@ class TenantProfileView(generics.GenericAPIView):
 def get_csrf_token(request):
     csrf_token = get_token(request)
     return JsonResponse({"csrfToken": csrf_token})
-
 
 class AppointmentView(generics.GenericAPIView):
     queryset = Appointment.objects.all()
@@ -132,5 +125,3 @@ class VerificationView(generics.GenericAPIView):
 
     def get_objects(self):
         return self.request.user.verification.status
-
-
