@@ -3,8 +3,6 @@ from .serializers import CartItemSerializer, CartSerializer, OrderSerializer, Or
 from rest_framework.response import Response
 from .models import Cart, CartItem, Order, OrderItem
 
-# Create your views here.
-
 # cart views
 class CartDetailView(generics.RetrieveAPIView):
     serializer_class = CartSerializer
