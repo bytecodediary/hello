@@ -22,9 +22,11 @@ export default function Header() {
 
   return (
     <nav className="fixed top-0 left-0 right-0 flex items-center justify-between px-4 py-3 bg-white shadow-sm z-50">
-      <div className="flex items-center">
-        <TrendingUp color="black" className="w-6 h-6 mr-2" />
-      </div>
+       <Link href="/" passHref>
+          <div className="flex items-center cursor-pointer">
+            <TrendingUp color="black" className="w-6 h-6 mr-2" />
+          </div>
+      </Link>
 
       {/* Navigation Links */}
       <ul className="hidden md:flex space-x-10">
@@ -44,12 +46,25 @@ export default function Header() {
           </Link>
         </li>
         <li>
-          <Link href="/about" className="text-gray-600 hover:text-gray-900">
+          <Link href="/Pages/profile/" className="text-gray-600 hover:text-gray-900">
             About
           </Link>
+         
         </li>
         <li>
-          <Link href="/contact" className="text-gray-600 hover:text-gray-900">
+          <Link href="/Pages/profile/" className="text-gray-600 hover:text-gray-900">
+            Profile
+          </Link>
+         
+        </li>
+        <li>
+          <Link href="/Pages/propertypage/" className="text-gray-600 hover:text-gray-900">
+            Properties
+          </Link>
+         
+        </li>
+        <li>
+          <Link href="/Pages/contact/" className="text-gray-600 hover:text-gray-900">
             Contact
           </Link>
         </li>
