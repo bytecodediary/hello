@@ -130,5 +130,5 @@ class Verification(models.Model):
             self.status == "rejected"
         return self.status
     
-    def __str__(self):
-        return f"verified {self.user.email} - {"verified" if self.is_verified else "pending"}"
+    # def __str__(self):
+    #     return f"verified {self.user.email} - {"verified" if self.is_verified else "pending"}"

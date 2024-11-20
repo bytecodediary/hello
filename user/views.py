@@ -5,7 +5,6 @@ from rest_framework.response import Response
 from django.http import JsonResponse
 from django.middleware.csrf import get_token
 
-
 #custom user views
 class ChangeUserTypeView(generics.UpdateAPIView):
     queryset = CustomUser.objects.all()
@@ -20,7 +19,6 @@ class UserRegistrationView(generics.CreateAPIView):
     serializer_class = CustomUserSerializer
     permission_classes = [permissions.AllowAny]
     
-
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
