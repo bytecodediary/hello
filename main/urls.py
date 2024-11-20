@@ -14,7 +14,6 @@ urlpatterns = [
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('order', include('order.urls')),
     path('payment', include('payment.urls')),
-    path('user', include('user.urls')),
     path('user/', include('user.urls')),
-    path('frontend/', include("frontend.urls")),
+    # path('frontend/', include("frontend.urls")),
 ]

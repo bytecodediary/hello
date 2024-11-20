@@ -25,9 +25,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-5%174s74sae9=xv3jt8=yhv)*%$8@)1$1dw+1)ff$0(zxvcg%1"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -55,7 +55,7 @@ INSTALLED_APPS = [
     'frontend',
 
 ]
-# CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ALL_ORIGINS = True
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
@@ -68,7 +68,6 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     #video added user_api.apps 1:53
 ]
-MODEL_PATH = r'C:\Users\lawrence.wafula\git\hello\frontend\model.keras'
 
 ROOT_URLCONF = "main.urls"
 
