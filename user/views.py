@@ -4,6 +4,7 @@ from .serializers import AgentSerializer, ClientSerializer, OwnerSerializer, Cha
 from rest_framework.response import Response
 from django.http import JsonResponse
 from django.middleware.csrf import get_token
+from rest_framework_simplejwt.tokens import RefreshToken  # Importing here for clarity
 from .serializers import AgentSerializer, ClientSerializer, OwnerSerializer, ChangeUserTypeSerializer, CustomUserSerializer, LoginSerializer, VerificationSerializer, TenantSerializer  # noqa: F811
 from rest_framework.decorators import api_view
 
@@ -35,19 +36,19 @@ class UserLoginView(generics.GenericAPIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request, *args, **kwargs):
-        # print("Received request data:", request.data) 
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             user = serializer.validated_data['user']
+            token = RefreshToken.for_user(user)  # Generate JWT token
             return Response({
                 'message': 'login successful',
+                'token': str(token.access_token),  # Add the JWT token here
                 'user': {
                     'email': user.email,
                     'first_name': user.first_name,
                     'last_name': user.last_name,
                 }
             }, status=status.HTTP_200_OK)
-        # print("Serializer errors:", serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 #profiles

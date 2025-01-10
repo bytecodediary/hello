@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
-import { SessionProvider } from "next-auth/react"
+import { SessionProvider } from "next-auth/react";
+import { useEffect } from "react";
+import { useState } from "react";
 import "./style/globals.css";
 
 const geistSans = localFont({
@@ -24,6 +26,15 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token"); // Retrieve the JWT token
+    if (token) {
+      setIsAuthenticated(true); // Set authenticated state
+    }
+  }, []);
+
   return (
     <SessionProvider>
       <html lang="en">

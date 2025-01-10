@@ -22,6 +22,7 @@ export async function loginUser(formData: FormData, csrfToken: string) {
     }
 
     const result = await response.json();
+    localStorage.setItem("token", result.token); // Store the JWT token
     return { success: true, message: result.message || "Login successful" };
   } catch (error) {
     console.error("Login error:", error);
