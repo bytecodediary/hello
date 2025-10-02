@@ -5,6 +5,7 @@ import { Button } from "@/app/Components/ui/Button";
 import Input from "@/app/Components/ui/Input";
 import Label from "@/app/Components/ui/label";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/app/Pages/API/authCheck";
 
 // Define API URL using environment variable
 
@@ -16,6 +17,7 @@ export default function LoginPage() {
   const [csrfToken, setCsrfToken] = useState<string>("");
 
   const router = useRouter();
+  const { refreshAuth } = useAuth();
 
   useEffect(() => {
     const fetchCsrfToken = async () => {
@@ -85,8 +87,14 @@ export default function LoginPage() {
       }
 
       const result = await response.json();
-      localStorage.setItem("token", result.token); // Store the JWT token
+      if (typeof window !== "undefined") {
+        localStorage.setItem("token", result.token);
+        if (result.user) {
+          localStorage.setItem("user", JSON.stringify(result.user));
+        }
+      }
       setMessage(result.message || "Login successful");
+      await refreshAuth();
       setTimeout(() => router.push("/"), 2000);
     } catch (error) {
       console.error("Login error:", error);

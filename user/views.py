@@ -6,7 +6,8 @@ from django.http import JsonResponse
 from django.middleware.csrf import get_token
 from rest_framework_simplejwt.tokens import RefreshToken  # Importing here for clarity
 from .serializers import AgentSerializer, ClientSerializer, OwnerSerializer, ChangeUserTypeSerializer, CustomUserSerializer, LoginSerializer, VerificationSerializer, TenantSerializer  # noqa: F811
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from django.contrib.auth import logout
 
 #custom user views
 class ChangeUserTypeView(generics.UpdateAPIView):
@@ -98,10 +99,26 @@ class AppointmentView(generics.GenericAPIView):
         return self.request.user.username
 
 @api_view(['GET'])
+@permission_classes([permissions.AllowAny])
 def check_authentification(request):
-    if request.user.is_authenticated:
-        return Response({"authenticated":True, "username": request.user.username})
+    user = request.user if request.user and request.user.is_authenticated else None
+    if user:
+        return Response({
+            "authenticated": True,
+            "username": user.username,
+            "email": user.email,
+        })
     return Response({"authenticated": False})
+
+
+@api_view(['POST'])
+@permission_classes([permissions.AllowAny])
+def logout_view(request):
+    logout(request)
+    response = Response({"message": "Logged out"}, status=status.HTTP_200_OK)
+    response.delete_cookie("sessionid")
+    response.delete_cookie("csrftoken")
+    return response
   
 class VerificationView(generics.GenericAPIView):
     serializer_class = VerificationSerializer

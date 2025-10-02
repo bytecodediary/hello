@@ -1,12 +1,13 @@
 import Link from "next/link";
-import Image from "next/image";
 import { TrendingUp, User } from "lucide-react";
 import { Button } from "../ui/Button";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { useAuth } from '../../Pages/API/authCheck';
+import { useAuth } from "../../Pages/API/authCheck";
 
 export default function Header() {
   const { user, logout } = useAuth();
+
+  const displayName = user?.username ?? "";
 
   // if (loading) {
   //   // Display a loader while the authentication status is being fetched
@@ -71,21 +72,25 @@ export default function Header() {
       </ul>
 
       <div className="flex items-center space-x-4">
-        {user ? (
+        {displayName ? (
           <>
             {/* Display authenticated user info */}
             <span className="text-sm font-medium text-gray-700">
-              Welcome, {user}
+              Welcome, {displayName}
             </span>
             <Avatar>
-              <AvatarImage src="/path-to-user-avatar" alt={`${user} avatar`} />
+              <AvatarImage src="/path-to-user-avatar" alt={`${displayName} avatar`} />
               <AvatarFallback>
                 <User className="w-5 h-5" />
               </AvatarFallback>
             </Avatar>
 
             {/* Logout Button */}
-            <Button variant="ghost" size="sm" onClick={logout}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => logout()}
+            >
               Log Out
             </Button>
           </>
