@@ -1,80 +1,117 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  User, Home, CreditCard, Wrench, FileText, Bell, Phone,
-  CheckCircle, Calendar, Clock, ChevronRight, Shield, Mail
+  User,
+  Home,
+  CreditCard,
+  Wrench,
+  FileText,
+  Bell,
+  Phone,
+  CheckCircle,
+  Shield,
+  Mail,
+  Info,
 } from 'lucide-react';
 import Header from '@/app/Components/Layouts/Header';
+import { apiClient } from '@/app/libs/api';
+import type { TenantProfileRecord } from '@/app/type/api';
+
+type ProfileTab =
+  | 'personal'
+  | 'lease'
+  | 'payments'
+  | 'maintenance'
+  | 'documents'
+  | 'preferences'
+  | 'emergency';
 
 export default function TenantProfile() {
-  const [activeTab, setActiveTab] = useState('personal');
+  const [activeTab, setActiveTab] = useState<ProfileTab>('personal');
+  const [profile, setProfile] = useState<TenantProfileRecord | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const tenant = {
-    name: "Sarah Anderson",
-    email: "sarah.anderson@email.com",
-    phone: "(555) 123-4567",
-    verified: true,
-    lease: {
-      address: "123 Modern Apartments, Unit 4B",
-      startDate: "2023-08-01",
-      endDate: "2024-07-31",
-      monthlyRent: 2200
-    },
-    paymentHistory: [
-      { date: "2024-03-01", amount: 2200, status: "Paid" },
-      { date: "2024-02-01", amount: 2200, status: "Paid" },
-      { date: "2024-01-01", amount: 2200, status: "Paid" }
-    ],
-    maintenanceRequests: [
-      { id: "MR-001", date: "2024-02-28", issue: "Dishwasher repair", status: "In Progress" },
-      { id: "MR-002", date: "2024-01-15", issue: "HVAC maintenance", status: "Completed" }
-    ],
-    documents: [
-      { name: "Lease Agreement 2023-2024", date: "2023-07-25" },
-      { name: "Renter's Insurance Policy", date: "2023-07-28" },
-      { name: "Move-in Inspection Report", date: "2023-08-01" }
-    ],
-    emergency: {
-      name: "Michael Anderson",
-      relation: "Brother",
-      phone: "(555) 987-6543"
+  const fetchProfile = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await apiClient.get<TenantProfileRecord>('/user/profile/tenant/', {
+        authenticated: true,
+      });
+      setProfile(data);
+    } catch (err) {
+      console.error('Failed to load tenant profile', err);
+      setError(err instanceof Error ? err.message : 'Failed to load tenant profile');
+    } finally {
+      setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    void fetchProfile();
+  }, [fetchProfile]);
+
+  const tenantName = useMemo(() => {
+    if (!profile) return 'Tenant';
+    const parts = [profile.user?.first_name, profile.user?.username].filter(Boolean) as string[];
+    return parts.join(' ') || 'Tenant';
+  }, [profile]);
+
+  const paymentSummaryRows = useMemo(() => {
+    if (!profile?.rent_status_summary) {
+      return [];
+    }
+
+    return [
+      {
+        id: profile.rent_status_summary.id,
+        price: profile.rent_status_summary.price,
+        mode: profile.rent_status_summary.payment_mode,
+        description: profile.rent_status_summary.description,
+        added_at: profile.rent_status_summary.added_at,
+        updated_at: profile.rent_status_summary.updated_at,
+      },
+    ];
+  }, [profile]);
 
   return (
     <div className="min-h-screen bg-gray-50">
-        <Header/>
-      {/* Header */}
+      <Header />
+
       <header className="bg-white shadow-sm py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <div className="h-12 w-12 rounded-full bg-indigo-100 flex items-center justify-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-indigo-100">
                 <User className="h-6 w-6 text-indigo-600" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">{tenant.name}</h1>
+                <h1 className="text-2xl font-bold text-gray-900">{tenantName}</h1>
                 <p className="text-sm text-gray-500">Tenant Profile</p>
               </div>
             </div>
-            <div className="flex items-center space-x-2">
-              {tenant.verified && (
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                  <CheckCircle className="h-4 w-4 mr-1" /> Verified
-                </span>
-              )}
-            </div>
+            {profile?.has_paid && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-3 py-1 text-sm font-medium text-green-800">
+                <CheckCircle className="h-4 w-4" />
+                Payments up to date
+              </span>
+            )}
           </div>
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Sidebar Navigation */}
+        {error && (
+          <div className="mb-6 rounded-md border border-destructive bg-destructive/10 p-4 text-destructive">
+            {error}
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
           <nav className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow-sm p-4">
+            <div className="rounded-lg bg-white p-4 shadow-sm">
               <ul className="space-y-2">
                 {[
                   { id: 'personal', icon: User, label: 'Personal Information' },
@@ -87,8 +124,8 @@ export default function TenantProfile() {
                 ].map((item) => (
                   <li key={item.id}>
                     <button
-                      onClick={() => setActiveTab(item.id)}
-                      className={`w-full flex items-center space-x-3 px-4 py-2 rounded-md text-sm ${
+                      onClick={() => setActiveTab(item.id as ProfileTab)}
+                      className={`flex w-full items-center space-x-3 rounded-md px-4 py-2 text-sm ${
                         activeTab === item.id
                           ? 'bg-indigo-50 text-indigo-600'
                           : 'text-gray-700 hover:bg-gray-50'
@@ -103,222 +140,207 @@ export default function TenantProfile() {
             </div>
           </nav>
 
-          {/* Main Content Area */}
-          <div className="lg:col-span-3 space-y-6">
-            {/* Personal Information Section */}
-            {activeTab === 'personal' && (
-              <div className="bg-white rounded-lg shadow-sm p-6">
-                <h2 className="text-xl font-semibold mb-6">Personal Information</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Full Name</label>
-                    <p className="mt-1 text-gray-900">{tenant.name}</p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Email</label>
-                    <p className="mt-1 text-gray-900">{tenant.email}</p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Phone</label>
-                    <p className="mt-1 text-gray-900">{tenant.phone}</p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">ID Verification</label>
-                    <div className="mt-1 flex items-center space-x-2">
-                      <Shield className="h-5 w-5 text-green-500" />
-                      <span className="text-green-600">Verified</span>
-                    </div>
-                  </div>
+          <div className="space-y-6 lg:col-span-3">
+            {loading ? (
+              <div className="rounded-lg bg-white p-6 shadow-sm">
+                <div className="h-6 w-1/3 animate-pulse rounded bg-muted" />
+                <div className="mt-4 space-y-2">
+                  <div className="h-4 w-full animate-pulse rounded bg-muted" />
+                  <div className="h-4 w-2/3 animate-pulse rounded bg-muted" />
+                  <div className="h-4 w-1/2 animate-pulse rounded bg-muted" />
                 </div>
               </div>
-            )}
-
-            {/* Lease Details Section */}
-            {activeTab === 'lease' && (
-              <div className="bg-white rounded-lg shadow-sm p-6">
-                <h2 className="text-xl font-semibold mb-6">Current Lease Details</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Property Address</label>
-                    <p className="mt-1 text-gray-900">{tenant.lease.address}</p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Monthly Rent</label>
-                    <p className="mt-1 text-gray-900">${tenant.lease.monthlyRent}</p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Lease Start Date</label>
-                    <p className="mt-1 text-gray-900">{new Date(tenant.lease.startDate).toLocaleDateString()}</p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Lease End Date</label>
-                    <p className="mt-1 text-gray-900">{new Date(tenant.lease.endDate).toLocaleDateString()}</p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-             {/* Payments Section */}
-             {activeTab === 'payments' && (
-              <div className="space-y-6">
-                <div className="bg-white rounded-lg shadow-sm p-6">
-                  <h2 className="text-xl font-semibold mb-6">Payment History</h2>
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead>
-                        <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-200">
-                        {tenant.paymentHistory.map((payment, index) => (
-                          <tr key={index}>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                              {new Date(payment.date).toLocaleDateString()}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                              ${payment.amount}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                {payment.status}
-                              </span>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Maintenance Section */}
-            {activeTab === 'maintenance' && (
-              <div className="bg-white rounded-lg shadow-sm p-6">
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-xl font-semibold">Maintenance Requests</h2>
-                  <button className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700">
-                    New Request
-                  </button>
-                </div>
-                <div className="space-y-4">
-                  {tenant.maintenanceRequests.map((request) => (
-                    <div key={request.id} className="border rounded-lg p-4">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h3 className="text-lg font-medium text-gray-900">{request.issue}</h3>
-                          <p className="text-sm text-gray-500">Request ID: {request.id}</p>
-                          <p className="text-sm text-gray-500">
-                            Submitted: {new Date(request.date).toLocaleDateString()}
-                          </p>
-                        </div>
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          request.status === 'Completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                        }`}>
-                          {request.status}
-                        </span>
+            ) : (
+              <>
+                {activeTab === 'personal' && (
+                  <div className="rounded-lg bg-white p-6 shadow-sm">
+                    <h2 className="text-xl font-semibold mb-6">Personal Information</h2>
+                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">Full Name</label>
+                        <p className="mt-1 text-gray-900">{tenantName}</p>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Documents Section */}
-            {activeTab === 'documents' && (
-              <div className="bg-white rounded-lg shadow-sm p-6">
-                <h2 className="text-xl font-semibold mb-6">Documents</h2>
-                <div className="space-y-4">
-                  {tenant.documents.map((doc, index) => (
-                    <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="flex items-center space-x-3">
-                        <FileText className="h-5 w-5 text-gray-400" />
-                        <div>
-                          <p className="text-sm font-medium text-gray-900">{doc.name}</p>
-                          <p className="text-xs text-gray-500">
-                            Added: {new Date(doc.date).toLocaleDateString()}
-                          </p>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">Email</label>
+                        <p className="mt-1 text-gray-900">{profile?.email ?? '—'}</p>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">Phone</label>
+                        <p className="mt-1 text-gray-900">{profile?.phone_number ?? '—'}</p>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">Account Status</label>
+                        <div className="mt-1 flex items-center space-x-2">
+                          <Shield className="h-5 w-5 text-indigo-500" />
+                          <span className="text-sm text-gray-700">
+                            {profile?.has_paid ? 'Active tenant in good standing' : 'Payment status pending'}
+                          </span>
                         </div>
                       </div>
-                      <button className="text-indigo-600 hover:text-indigo-800">
-                        <ChevronRight className="h-5 w-5" />
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === 'lease' && (
+                  <div className="rounded-lg bg-white p-6 shadow-sm">
+                    <h2 className="text-xl font-semibold mb-6">Lease Details</h2>
+                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">Lease Agreement</label>
+                        <p className="mt-1 text-gray-900">{profile?.lease_agreement ?? 'Not provided'}</p>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">Rent Status</label>
+                        <p className="mt-1 text-gray-900">
+                          {profile?.rent_status_summary
+                            ? `${profile.rent_status_summary.payment_mode} • ${profile.rent_status_summary.price}`
+                            : 'No payment information yet'}
+                        </p>
+                      </div>
+                    </div>
+                    {profile?.rent_status_summary?.description && (
+                      <div className="mt-4 rounded-md bg-muted/40 p-4 text-sm text-muted-foreground">
+                        {profile.rent_status_summary.description}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {activeTab === 'payments' && (
+                  <div className="rounded-lg bg-white p-6 shadow-sm">
+                    <h2 className="text-xl font-semibold mb-6">Payment Summary</h2>
+                    {paymentSummaryRows.length ? (
+                      <div className="overflow-x-auto">
+                        <table className="min-w-full divide-y divide-gray-200">
+                          <thead>
+                            <tr>
+                              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Payment ID</th>
+                              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Amount</th>
+                              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Mode</th>
+                              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Created</th>
+                              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Updated</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-gray-200">
+                            {paymentSummaryRows.map((row) => (
+                              <tr key={row.id}>
+                                <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">{row.id}</td>
+                                <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">{row.price}</td>
+                                <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900 capitalize">{row.mode}</td>
+                                <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
+                                  {new Date(row.added_at).toLocaleDateString()}
+                                </td>
+                                <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
+                                  {new Date(row.updated_at).toLocaleDateString()}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2 rounded-md border border-dashed border-muted-foreground/40 bg-muted/20 p-4 text-sm text-muted-foreground">
+                        <Info className="h-4 w-4" />
+                        No payment records found yet.
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {activeTab === 'maintenance' && (
+                  <div className="rounded-lg bg-white p-6 shadow-sm">
+                    <div className="mb-6 flex items-center justify-between">
+                      <h2 className="text-xl font-semibold">Maintenance Requests</h2>
+                      <button className="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700">
+                        New Request
                       </button>
                     </div>
-                  ))}
-                </div>
-              </div>
-            )}
+                    <div className="rounded-md border border-dashed border-muted-foreground/40 bg-muted/20 p-6 text-center text-sm text-muted-foreground">
+                      Maintenance tracking is coming soon.
+                    </div>
+                  </div>
+                )}
 
-            {/* Preferences Section */}
-            {activeTab === 'preferences' && (
-              <div className="bg-white rounded-lg shadow-sm p-6">
-                <h2 className="text-xl font-semibold mb-6">Communication Preferences</h2>
-                <div className="space-y-6">
-                  <div>
-                    <label className="text-base font-medium text-gray-900">Notification Methods</label>
-                    <div className="mt-4 space-y-4">
-                      <div className="flex items-center">
-                        <input type="checkbox" className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded" defaultChecked />
-                        <label className="ml-3 text-sm text-gray-700">Email notifications</label>
+                {activeTab === 'documents' && (
+                  <div className="rounded-lg bg-white p-6 shadow-sm">
+                    <h2 className="text-xl font-semibold mb-6">Documents</h2>
+                    {profile?.lease_agreement ? (
+                      <div className="flex items-center justify-between rounded-lg border p-4">
+                        <div className="flex items-center gap-3">
+                          <FileText className="h-5 w-5 text-gray-400" />
+                          <div>
+                            <p className="text-sm font-medium text-gray-900">Lease Agreement</p>
+                            <p className="text-xs text-gray-500">Reference: {profile.lease_agreement}</p>
+                          </div>
+                        </div>
+                        <button className="text-indigo-600 hover:text-indigo-800">
+                          View
+                        </button>
                       </div>
-                      <div className="flex items-center">
-                        <input type="checkbox" className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded" defaultChecked />
-                        <label className="ml-3 text-sm text-gray-700">SMS notifications</label>
+                    ) : (
+                      <div className="rounded-md border border-dashed border-muted-foreground/40 bg-muted/20 p-6 text-center text-sm text-muted-foreground">
+                        No documents uploaded yet.
                       </div>
-                      <div className="flex items-center">
-                        <input type="checkbox" className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded" />
-                        <label className="ml-3 text-sm text-gray-700">Push notifications</label>
+                    )}
+                  </div>
+                )}
+
+                {activeTab === 'preferences' && (
+                  <div className="rounded-lg bg-white p-6 shadow-sm">
+                    <h2 className="text-xl font-semibold mb-6">Communication Preferences</h2>
+                    <div className="space-y-6">
+                      <div>
+                        <label className="text-base font-medium text-gray-900">Notification Methods</label>
+                        <div className="mt-4 space-y-4">
+                          <div className="flex items-center">
+                            <input type="checkbox" className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" defaultChecked />
+                            <label className="ml-3 text-sm text-gray-700">Email notifications</label>
+                          </div>
+                          <div className="flex items-center">
+                            <input type="checkbox" className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" defaultChecked />
+                            <label className="ml-3 text-sm text-gray-700">SMS notifications</label>
+                          </div>
+                          <div className="flex items-center">
+                            <input type="checkbox" className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
+                            <label className="ml-3 text-sm text-gray-700">Push notifications</label>
+                          </div>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="text-base font-medium text-gray-900">Notification Types</label>
+                        <div className="mt-4 space-y-4">
+                          <div className="flex items-center">
+                            <input type="checkbox" className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" defaultChecked />
+                            <label className="ml-3 text-sm text-gray-700">Payment reminders</label>
+                          </div>
+                          <div className="flex items-center">
+                            <input type="checkbox" className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" defaultChecked />
+                            <label className="ml-3 text-sm text-gray-700">Maintenance updates</label>
+                          </div>
+                          <div className="flex items-center">
+                            <input type="checkbox" className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" defaultChecked />
+                            <label className="ml-3 text-sm text-gray-700">Building announcements</label>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
-                  <div>
-                    <label className="text-base font-medium text-gray-900">Notification Types</label>
-                    <div className="mt-4 space-y-4">
-                      <div className="flex items-center">
-                        <input type="checkbox" className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded" defaultChecked />
-                        <label className="ml-3 text-sm text-gray-700">Payment reminders</label>
-                      </div>
-                      <div className="flex items-center">
-                        <input type="checkbox" className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded" defaultChecked />
-                        <label className="ml-3 text-sm text-gray-700">Maintenance updates</label>
-                      </div>
-                      <div className="flex items-center">
-                        <input type="checkbox" className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded" defaultChecked />
-                        <label className="ml-3 text-sm text-gray-700">Building announcements</label>
-                      </div>
+                )}
+
+                {activeTab === 'emergency' && (
+                  <div className="rounded-lg bg-white p-6 shadow-sm">
+                    <h2 className="text-xl font-semibold mb-6">Emergency Contact Information</h2>
+                    <div className="rounded-md border border-dashed border-muted-foreground/40 bg-muted/20 p-6 text-center text-sm text-muted-foreground">
+                      Emergency contact details not set yet.
+                    </div>
+                    <div className="mt-6">
+                      <button className="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50">
+                        Update Emergency Contact
+                      </button>
                     </div>
                   </div>
-                </div>
-              </div>
-            )}
-
-              {/* Emergency Contacts Section */}
-              {activeTab === 'emergency' && (
-              <div className="bg-white rounded-lg shadow-sm p-6">
-                <h2 className="text-xl font-semibold mb-6">Emergency Contact Information</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Contact Name</label>
-                    <p className="mt-1 text-gray-900">{tenant.emergency.name}</p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Relationship</label>
-                    <p className="mt-1 text-gray-900">{tenant.emergency.relation}</p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Phone Number</label>
-                    <p className="mt-1 text-gray-900">{tenant.emergency.phone}</p>
-                  </div>
-                </div>
-                <div className="mt-6">
-                  <button className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
-                    Update Emergency Contact
-                  </button>
-                </div>
-              </div>
+                )}
+              </>
             )}
           </div>
         </div>

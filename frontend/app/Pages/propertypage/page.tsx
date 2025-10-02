@@ -1,58 +1,118 @@
 "use client";
 
-import React, { useState, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Filters from '@/app/Components/property/filters';
 import PropertyList from '@/app/Components/property/PropertyList';
 import PropertyDetails from '@/app/Components/property/PropertyDetails';
-import { properties } from '@/app/data/properties';
-import { Property } from '@/app/type/property';
 import Header from '@/app/Components/Layouts/Header';
+import { apiClient } from '@/app/libs/api';
+import type { PropertyRecord } from '@/app/type/api';
 
 function Propage() {
   const [filters, setFilters] = useState({
     search: '',
-    type: '',
+    city: '',
+    status: '',
     minPrice: '',
     maxPrice: '',
-    sortBy: 'featured',
+    sortBy: 'listed-newest',
   });
-  const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
+  const [properties, setProperties] = useState<PropertyRecord[]>([]);
+  const [selectedPropertySlug, setSelectedPropertySlug] = useState<string | null>(null);
+  const [selectedProperty, setSelectedProperty] = useState<PropertyRecord | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [detailError, setDetailError] = useState<string | null>(null);
 
   const handleFilterChange = (name: string, value: string) => {
     setFilters((prev) => ({ ...prev, [name]: value }));
   };
 
-  const filteredProperties = useMemo(() => {
-    return properties
-      .filter((property) => {
-        const matchesSearch = property.title
-          .toLowerCase()
-          .includes(filters.search.toLowerCase());
-        const matchesType = !filters.type || property.type === filters.type;
-        const matchesMinPrice =
-          !filters.minPrice || property.price >= parseInt(filters.minPrice);
-        const matchesMaxPrice =
-          !filters.maxPrice || property.price <= parseInt(filters.maxPrice);
+  const sortOptionToOrdering = (value: string) => {
+    switch (value) {
+      case 'price-asc':
+        return 'price';
+      case 'price-desc':
+        return '-price';
+      case 'listed-oldest':
+        return 'listed_at';
+      case 'listed-newest':
+      default:
+        return '-listed_at';
+    }
+  };
 
-        return matchesSearch && matchesType && matchesMinPrice && matchesMaxPrice;
-      })
-      .sort((a, b) => {
-        switch (filters.sortBy) {
-          case 'price-asc':
-            return a.price - b.price;
-          case 'price-desc':
-            return b.price - a.price;
-          case 'name':
-            return a.title.localeCompare(b.title);
-          default:
-            return b.featured ? 1 : -1;
+  const fetchProperties = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const query: Record<string, string> = {};
+      if (filters.search) query.search = filters.search;
+      if (filters.city) query.city = filters.city;
+      if (filters.status) query.status = filters.status;
+      if (filters.minPrice) query.min_price = filters.minPrice;
+      if (filters.maxPrice) query.max_price = filters.maxPrice;
+      query.ordering = sortOptionToOrdering(filters.sortBy);
+
+      const response = await apiClient.get<PropertyRecord[] | { results: PropertyRecord[] }>(
+        '/propertylist/',
+        {
+          authenticated: false,
+          query,
         }
-      });
-  }, [filters, properties]);
+      );
 
-  const selectedProperty = selectedPropertyId 
-    ? properties.find(p => p.id === selectedPropertyId)
-    : null;
+      const records = Array.isArray(response) ? response : response?.results ?? [];
+      setProperties(records);
+    } catch (err) {
+      console.error('Failed to fetch properties', err);
+      setError(err instanceof Error ? err.message : 'Failed to load properties');
+    } finally {
+      setLoading(false);
+    }
+  }, [filters]);
+
+  const fetchPropertyDetail = useCallback(async (slug: string) => {
+    try {
+      setDetailLoading(true);
+      setDetailError(null);
+      const record = await apiClient.get<PropertyRecord>(`/property/${slug}/`, {
+        authenticated: false,
+      });
+      setSelectedProperty(record);
+    } catch (err) {
+      console.error('Failed to fetch property detail', err);
+      setDetailError(err instanceof Error ? err.message : 'Failed to load property details');
+    } finally {
+      setDetailLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void fetchProperties();
+  }, [fetchProperties]);
+
+  useEffect(() => {
+    if (!selectedPropertySlug) {
+      setSelectedProperty(null);
+      return;
+    }
+    void fetchPropertyDetail(selectedPropertySlug);
+  }, [fetchPropertyDetail, selectedPropertySlug]);
+
+  const handlePropertyClick = useCallback((slug: string) => {
+    setSelectedPropertySlug(slug);
+  }, []);
+
+  const listHeading = useMemo(() => {
+    const segments: string[] = [];
+    if (filters.city) segments.push(filters.city);
+    if (filters.status) segments.push(filters.status);
+    if (filters.search) segments.push(`matching "${filters.search}"`);
+    return segments.length ? segments.join(' • ') : 'All properties';
+  }, [filters.city, filters.status, filters.search]);
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -60,25 +120,45 @@ function Propage() {
       <header className="bg-white shadow-sm py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <h1 className="text-2xl font-bold text-gray-900">Property Listings</h1>
-          <p className="mt-1 text-sm text-gray-500">
-            Find your perfect property from our curated listings
-          </p>
+          <p className="mt-1 text-sm text-gray-500">{listHeading}</p>
         </div>
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {selectedProperty ? (
-          <PropertyDetails 
-            property={selectedProperty} 
-            onBack={() => setSelectedPropertyId(null)}
-          />
+          <div className="space-y-4">
+            {detailError && (
+              <div className="rounded-md border border-destructive bg-destructive/10 p-4 text-destructive">
+                {detailError}
+              </div>
+            )}
+            <PropertyDetails 
+              property={selectedProperty} 
+              onBack={() => setSelectedPropertySlug(null)}
+            />
+            {detailLoading && (
+              <div className="rounded-md border bg-muted/40 p-4 text-sm text-muted-foreground">
+                Loading property details...
+              </div>
+            )}
+          </div>
         ) : (
           <>
             <Filters filters={filters} onFilterChange={handleFilterChange} />
+            {error && (
+              <div className="mb-4 rounded-md border border-destructive bg-destructive/10 p-4 text-destructive">
+                {error}
+              </div>
+            )}
             <PropertyList 
-              properties={filteredProperties} 
-              onPropertyClick={setSelectedPropertyId}
+              properties={properties} 
+              onPropertyClick={handlePropertyClick}
             />
+            {loading && (
+              <div className="mt-4 rounded-md border bg-muted/40 p-4 text-sm text-muted-foreground">
+                Loading properties...
+              </div>
+            )}
           </>
         )}
       </main>

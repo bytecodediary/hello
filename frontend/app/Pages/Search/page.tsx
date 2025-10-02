@@ -111,6 +111,20 @@ export default function Buy() {
     []
   );
 
+  const sortSelectValue = useMemo(() => {
+    switch (sortOption) {
+      case "price":
+        return "price-asc";
+      case "-price":
+        return "price-desc";
+      case "listed_at":
+        return "listed-oldest";
+      case "-listed_at":
+      default:
+        return "listed-newest";
+    }
+  }, [sortOption]);
+
   useEffect(() => {
     void fetchProperties({ city: location || undefined });
   }, [fetchProperties, sortOption]);
@@ -157,7 +171,7 @@ export default function Buy() {
                 </div>
                 <div>
                   <Select
-                    defaultValue="listed-newest"
+                    value={sortSelectValue}
                     onValueChange={handleSortChange}
                   >
                     <SelectTrigger className="w-[180px]">

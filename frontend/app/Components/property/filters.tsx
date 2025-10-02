@@ -65,10 +65,10 @@ export default function Filters({ filters, onFilterChange }: FiltersProps) {
             onChange={(e) => onFilterChange('sortBy', e.target.value)}
             className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
           >
-            <option value="featured">Featured</option>
+            <option value="listed-newest">Newest</option>
+            <option value="listed-oldest">Oldest</option>
             <option value="price-asc">Price: Low to High</option>
             <option value="price-desc">Price: High to Low</option>
-            <option value="name">Name</option>
           </select>
         </div>
 
