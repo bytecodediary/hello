@@ -69,7 +69,7 @@ class Property(models.Model):
 class Image(models.Model):
     image = models.ImageField(upload_to="media/product_images")
     image_alt = models.TextField()
-    property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name="images", default='')
+    property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name="images")
     
     def __str__(self):
         return self.image_alt

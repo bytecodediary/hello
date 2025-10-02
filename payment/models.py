@@ -53,7 +53,7 @@ class Transaction(models.Model):
     transaction_type = models.CharField(max_length=200, choices=TRANSACTION_TYPE_CHOICES, default='')
 
     def __str__(self):
-        return self.user.username
+        return f"transaction for {self.payment.user.username}"
     
     def save(self, *args, **kwargs):
         if not self.slug:

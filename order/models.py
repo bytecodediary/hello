@@ -59,7 +59,7 @@ class CartItem(models.Model):
     slug = models.SlugField(unique=True, blank=True)
 
     def __str__(self):
-        return self.user.username
+        return f"item for {self.cart.user.username}"
     
     def save(self, *args, **kwargs):
         if not self.slug:
