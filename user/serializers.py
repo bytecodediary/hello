@@ -8,16 +8,16 @@ from .models import Agent, Client, Owner, CustomUser, Verification, Appointment,
 
 class OwnerSerializer(serializers.ModelSerializer):
     property_details = serializers.SerializerMethodField()
-    property = serializers.PrimaryKeyRelatedField(read_only=True, source='property.id')
+    properties = serializers.PrimaryKeyRelatedField(read_only=True, source='properties.id')
     user = serializers.StringRelatedField()
 
     class Meta:
         model = Owner
-        fields = ['id', 'property', 'user', 'property_details', 'phone_number' ]
+        fields = ['id', 'properties', 'user', 'property_details', 'phone_number' ]
     
     def get_property_details(self, obj):
         # Implement this method to return property details if needed
-        return obj.property.title if obj.property else None
+        return obj.properties.title if obj.properties else None
 
 class CustomUserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)

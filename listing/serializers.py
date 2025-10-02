@@ -16,13 +16,13 @@ class ImageSerializer(serializers.ModelSerializer):
 class PropertySerializer(serializers.ModelSerializer):
     features = PropertyFeaturesSerializer(many=True, required=False)
     owners = OwnerSerializer(many=True, read_only=True, source='owned_properties')
-    images = ImageSerializer(many=True, read_only=True)
+    images = ImageSerializer(many=True, required=False)
 
     class Meta:
         model = Property 
-        fields = ['slug', 'title', 'owners' 'description', 'price', 'images', 'city', 'address', 'listed_at', 'updated_at', 'features']
+        fields = ['slug', 'title', 'owners', 'description', 'price', 'images', 'city', 'address', 'listed_at', 'updated_at', 'features']
     
-    def create(self, **validated_data):
+    def create(self, validated_data):
         features_data = validated_data.pop('features', [])
         images_data = validated_data.pop('images', [])
 
@@ -36,22 +36,23 @@ class PropertySerializer(serializers.ModelSerializer):
 
         return property_instance
 
-    def update(self, instance, **validated_data):
-        features_data = validated_data.pop('features', [])
-        images_data = validated_data.pop('images', [])
+    def update(self, instance, validated_data):
+        features_data = validated_data.pop('features', None)
+        images_data = validated_data.pop('images', None)
 
         instance.title = validated_data.get('title', instance.title)
         instance.description = validated_data.get('description', instance.description)
         instance.price = validated_data.get('price', instance.price)
-        instance.image = validated_data.get('image', instance.image)
+        instance.city = validated_data.get('city', instance.city)
+        instance.address = validated_data.get('address', instance.address)
         instance.save()
         
-        if features_data:
+        if features_data is not None:
             instance.features.all().delete()
             for feature_data in features_data:
                 PropertyFeature.objects.create(property=instance, **feature_data)
-
-        if images_data:
+        
+        if images_data is not None:
             instance.images.all().delete()
             for image_data in images_data:
                 Image.objects.create(property=instance, **image_data)

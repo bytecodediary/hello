@@ -75,7 +75,7 @@ class Image(models.Model):
         return self.image_alt
        
 class PropertyFeature(models.Model):
-    property = models.ForeignKey(Property, on_delete=models.CASCADE)
+    property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='features')
     feature_name = models.CharField(max_length=200)
     feature_value = models.IntegerField(default=0, validators=[MinValueValidator(0), MaxValueValidator(100)])
 
