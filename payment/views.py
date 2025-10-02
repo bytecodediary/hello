@@ -1,23 +1,36 @@
 from .models import Payment, Transaction
-from rest_framework import status, permissions, generics, response
+from rest_framework import permissions, generics
+from rest_framework.exceptions import PermissionDenied
 from .serializers import PaymentSerializer, TransactionSerializer
 
-class PaymentView(generics.GenericAPIView):
+
+class PaymentView(generics.ListCreateAPIView):
     serializer_class = PaymentSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-    # this is a sample implimentation and will impliment something better later
-    def get_queryset(self, request):
-        queryset = Payment.objects.all()
-        queryset.user = request.user
-        queryset.save()
-        return queryset
+    def get_queryset(self):
+        return (
+            Payment.objects.filter(user=self.request.user)
+            .select_related("user", "order", "property_paid_for")
+            .prefetch_related("transactions")
+        )
 
-class TransactionView(generics.CreateAPIView):
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+
+class TransactionView(generics.ListCreateAPIView):
     serializer_class = TransactionSerializer
-    queryset = Transaction.objects.all()
     permission_classes = [permissions.IsAuthenticated]
 
-    # still learning the implmentation of the this view to include the payment gateway
-    def Post(self):
-        return response(status=status.HTTP_100_CONTINUE)
+    def get_queryset(self):
+        return (
+            Transaction.objects.filter(payment__user=self.request.user)
+            .select_related("payment", "payment__user", "payment__property_paid_for")
+        )
+
+    def perform_create(self, serializer):
+        payment = serializer.validated_data.get("payment")
+        if payment.user != self.request.user:
+            raise PermissionDenied("You are not allowed to create transactions for this payment.")
+        serializer.save()

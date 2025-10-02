@@ -1,4 +1,5 @@
 from rest_framework import generics, permissions, status
+from rest_framework.exceptions import NotFound
 from .models import Client, Agent, Owner, CustomUser, Tenant, Verification, Appointment
 from .serializers import AgentSerializer, ClientSerializer, OwnerSerializer, ChangeUserTypeSerializer, CustomUserSerializer, LoginSerializer, TenantSerializer, AppointmentSerializer, VerificationSerializer
 from rest_framework.response import Response
@@ -53,37 +54,52 @@ class UserLoginView(generics.GenericAPIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 #profiles
-class AgentProfileView(generics.GenericAPIView):
+class AgentProfileView(generics.RetrieveAPIView):
     queryset = Agent.objects.all()
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = AgentSerializer
 
-    def get_objects(self):
-        return self.request.user.agent
+    def get_object(self):
+        try:
+            return Agent.objects.select_related("agent").get(agent=self.request.user)
+        except Agent.DoesNotExist as exc:
+            raise NotFound("Agent profile not found") from exc
 
-class ClientProfileView(generics.GenericAPIView):
+
+class ClientProfileView(generics.RetrieveAPIView):
     queryset = Client.objects.all()
-    permission_classes =[permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
     serializer_class = ClientSerializer
 
-    def get_objects(self):
-        return self.request.user.customer
+    def get_object(self):
+        try:
+            return Client.objects.select_related("customer").get(customer=self.request.user)
+        except Client.DoesNotExist as exc:
+            raise NotFound("Client profile not found") from exc
     
-class OwnerProfileView(generics.GenericAPIView):
+
+class OwnerProfileView(generics.RetrieveAPIView):
     permission_classes = [permissions.IsAuthenticated]
     queryset = Owner.objects.all()
     serializer_class = OwnerSerializer
 
-    def get_objects(self):
-        return self.request.user.owner
+    def get_object(self):
+        try:
+            return Owner.objects.select_related("owner", "properties").get(owner=self.request.user)
+        except Owner.DoesNotExist as exc:
+            raise NotFound("Owner profile not found") from exc
 
-class TenantProfileView(generics.GenericAPIView):
+
+class TenantProfileView(generics.RetrieveAPIView):
     queryset = Tenant.objects.all()
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = TenantSerializer
 
-    def get_objects(self):
-        return self.request.user.agent
+    def get_object(self):
+        try:
+            return Tenant.objects.select_related("name", "rent_status").get(name=self.request.user)
+        except Tenant.DoesNotExist as exc:
+            raise NotFound("Tenant profile not found") from exc
 
 
 def get_csrf_token(request):

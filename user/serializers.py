@@ -81,7 +81,7 @@ class ClientSerializer(serializers.ModelSerializer):
       
 
 class AppointmentSerializer(serializers.ModelSerializer):
-    user = CustomUserSerializer(source="CustomUser.username", read_only=True)
+    user = CustomUserSerializer(source="user", read_only=True)
 
     class Meta:
         model = Appointment
@@ -118,10 +118,37 @@ class VerificationSerializer(serializers.ModelSerializer):
         return instance
 
 class TenantSerializer(serializers.ModelSerializer):
-    user = CustomUserSerializer(source="CustomUser.username", read_only=True)
+    user = CustomUserSerializer(source="name", read_only=True)
+    rent_status = serializers.PrimaryKeyRelatedField(read_only=True)
+    rent_status_summary = serializers.SerializerMethodField()
+    has_paid = serializers.SerializerMethodField()
 
-    class  Meta:
+    class Meta:
         model = Tenant
-        fields = ['user', 'name', 'email', 'phone_number', 'lease_agreement', 'rent_status']
+        fields = [
+            'user',
+            'email',
+            'phone_number',
+            'lease_agreement',
+            'rent_status',
+            'rent_status_summary',
+            'has_paid',
+        ]
+
+    def get_rent_status_summary(self, obj):
+        payment = getattr(obj, 'rent_status', None)
+        if not payment:
+            return None
+        return {
+            'id': payment.pk,
+            'price': str(payment.price),
+            'payment_mode': payment.payment_mode,
+            'description': payment.description,
+            'added_at': payment.added_at,
+            'updated_at': payment.updated_at,
+        }
+
+    def get_has_paid(self, obj):
+        return bool(obj.has_paid)
 
     

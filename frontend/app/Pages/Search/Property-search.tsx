@@ -1,16 +1,24 @@
-import { useState } from 'react';
 import { InputSearch } from "../../Components/ui/Input-search";
 import { ButtonSearch } from "../../Components/ui/Buttonsearch";
 import { Checkbox } from "../../Components/ui/checkbox";
 import { ArrowLeft } from "lucide-react";
 
-export default function PropertySearch() {
-  const [location, setLocation] = useState('');
+interface PropertySearchProps {
+  location: string;
+  onLocationChange: (value: string) => void;
+  onSubmit: () => void;
+  loading?: boolean;
+}
 
-  const handleSearch = (e: React.FormEvent) => {
+export default function PropertySearch({
+  location,
+  onLocationChange,
+  onSubmit,
+  loading = false,
+}: PropertySearchProps) {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Implement search logic here
-    console.log('Searching with:', { location });
+    onSubmit();
   };
 
   return (
@@ -19,14 +27,19 @@ export default function PropertySearch() {
         <ArrowLeft className="w-6 h-6 mr-2" />
         <h1 className="text-xl font-semibold">Find your property</h1>
       </a>
-      <form onSubmit={handleSearch} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4">
         <InputSearch
           placeholder="Enter city, state, or ZIP code"
           value={location}
-          onChange={(e) => setLocation(e.target.value)}
+          onChange={(e) => onLocationChange(e.target.value)}
         />
-        <ButtonSearch type="submit" className="w-full bg-[#bdb0c7] hover:bg-[#bdb0c9] text-[#0e140e]" label={'Search'}>
-          Search
+        <ButtonSearch
+          type="submit"
+          className="w-full bg-[#bdb0c7] hover:bg-[#bdb0c9] text-[#0e140e]"
+          label={loading ? "Searching..." : "Search"}
+          disabled={loading}
+        >
+          {loading ? "Searching..." : "Search"}
         </ButtonSearch>
       </form>
       <div className="mt-6">
@@ -37,6 +50,9 @@ export default function PropertySearch() {
           <Checkbox id="pet-friendly" label="Properties that are pet-friendly" />
           <Checkbox id="instant" label="Instant book" />
         </div>
+        <p className="mt-2 text-xs text-muted-foreground">
+          Additional filters coming soon.
+        </p>
       </div>
       <div className="mt-4">
         <h2 className="font-semibold mb-2">Price per night</h2>

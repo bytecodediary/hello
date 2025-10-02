@@ -4,7 +4,8 @@ import { Search, SlidersHorizontal } from 'lucide-react';
 type FiltersProps = {
   filters: {
     search: string;
-    type: string;
+    city: string;
+    status: string;
     minPrice: string;
     maxPrice: string;
     sortBy: string;
@@ -28,19 +29,15 @@ export default function Filters({ filters, onFilterChange }: FiltersProps) {
           />
         </div>
 
-        {/* Property Type */}
+        {/* City */}
         <div>
-          <select
-            value={filters.type}
-            onChange={(e) => onFilterChange('type', e.target.value)}
+          <input
+            type="text"
+            placeholder="City"
+            value={filters.city}
+            onChange={(e) => onFilterChange('city', e.target.value)}
             className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-          >
-            <option value="">All Types</option>
-            <option value="house">House</option>
-            <option value="apartment">Apartment</option>
-            <option value="condo">Condo</option>
-            <option value="townhouse">Townhouse</option>
-          </select>
+          />
         </div>
 
         {/* Price Range */}
@@ -72,6 +69,20 @@ export default function Filters({ filters, onFilterChange }: FiltersProps) {
             <option value="price-asc">Price: Low to High</option>
             <option value="price-desc">Price: High to Low</option>
             <option value="name">Name</option>
+          </select>
+        </div>
+
+        {/* Status */}
+        <div>
+          <select
+            value={filters.status}
+            onChange={(e) => onFilterChange('status', e.target.value)}
+            className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+          >
+            <option value="">All Status</option>
+            <option value="available">Available</option>
+            <option value="pending">Pending</option>
+            <option value="sold">Sold</option>
           </select>
         </div>
       </div>

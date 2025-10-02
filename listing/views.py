@@ -1,6 +1,7 @@
 from .serializers import PropertySerializer
 from .serializers import NotificationMiniSerializer, FCMDeviceSerializer
 from rest_framework import status, generics, permissions
+from rest_framework.filters import OrderingFilter, SearchFilter
 from .models import Property, Notification
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
@@ -12,14 +13,23 @@ from django.utils.translation import gettext_lazy as _
 
 #property views
 class PropertyListCreateView(generics.ListCreateAPIView):
-    queryset = Property.objects.all()
+    queryset = Property.objects.all().order_by("-listed_at")
     serializer_class = PropertySerializer
-    filter_backends = (DjangoFilterBackend)
+    filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
     filterset_class = PropertyFilter
+    search_fields = ["title", "description", "city", "address"]
+    ordering_fields = ["price", "listed_at"]
+    ordering = ["-listed_at"]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def perform_create(self, serializer):
+        serializer.save()
+
 
 class PropertyDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Property.objects.all()
     serializer_class = PropertySerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
 # notification views
 

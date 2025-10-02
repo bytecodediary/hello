@@ -1,0 +1,50 @@
+[
+  {
+    "model": "listing.property",
+    "pk": 1,
+    "fields": {
+      "title": "Modern Downtown Loft",
+      "description": "Stylish loft with open floor plan, exposed brick, and panoramic city views.",
+      "city": "Nairobi",
+      "status": "available",
+      "address": "123 Market Street",
+      "price": 14500000,
+      "stock": 4,
+      "slug": "loft-nairobi-123market",
+      "listed_at": "2024-01-10T09:30:00Z",
+      "updated_at": "2024-03-02T12:15:00Z"
+    }
+  },
+  {
+    "model": "listing.property",
+    "pk": 2,
+    "fields": {
+      "title": "Lakeview Family Home",
+      "description": "Spacious 4-bedroom home overlooking the lake with private dock and garden.",
+      "city": "Kisumu",
+      "status": "available",
+      "address": "47 Lakeside Drive",
+      "price": 19800000,
+      "stock": 2,
+      "slug": "lakeview-family-home",
+      "listed_at": "2024-02-05T14:45:00Z",
+      "updated_at": "2024-03-05T09:05:00Z"
+    }
+  },
+  {
+    "model": "listing.property",
+    "pk": 3,
+    "fields": {
+      "title": "Westlands Penthouse",
+      "description": "Luxury penthouse with rooftop terrace, smart home automation, and concierge service.",
+      "city": "Nairobi",
+      "status": "pending",
+      "address": "89 Riverside Lane",
+      "price": 32500000,
+      "stock": 1,
+      "slug": "westlands-penthouse",
+      "listed_at": "2024-03-12T08:00:00Z",
+      "updated_at": "2024-03-18T16:20:00Z"
+    }
+  }
+]
