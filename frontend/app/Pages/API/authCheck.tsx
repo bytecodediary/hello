@@ -1,4 +1,6 @@
-import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
+"use client";
+
+import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import type { ComponentType } from "react";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000";
@@ -35,69 +37,84 @@ const getStoredToken = (): string | null => {
 };
 
 export const AuthProvider = ({ children }: { children: ReactNode }): JSX.Element => {
-  const [user, setUser] = useState<AuthUser | null>(() => getStoredUser());
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const isMounted = useRef(false);
 
-  const performCheck = async (): Promise<void> => {
-    if (typeof window === "undefined") return;
-
-    const token = getStoredToken();
-    const storedUser = getStoredUser();
-
-    if (!token) {
-      setUser(null);
-      setLoading(false);
-      return;
+  const hydrateFromStorage = useCallback((): { token: string | null } => {
+    if (typeof window === "undefined") {
+      return { token: null };
     }
 
+    const storedUser = getStoredUser();
     if (storedUser) {
       setUser(storedUser);
-      setLoading(false);
-      return;
     }
 
-    try {
-      setError(null);
-      const res = await fetch(`${API_BASE_URL}/user/check_authentication/`, {
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        credentials: "include",
-      });
+    const token = getStoredToken();
+    return { token };
+  }, []);
 
-      if (!res.ok) {
-        throw new Error(`Auth check failed with status: ${res.status}`);
-      }
+  const performCheck = useCallback(
+    async (tokenOverride?: string | null): Promise<void> => {
+      if (typeof window === "undefined") return;
 
-      const data = await res.json();
-      if (data.authenticated) {
-        const userInfo: AuthUser = {
-          username: data.username,
-          email: data.email,
-        };
-        window.localStorage.setItem("user", JSON.stringify(userInfo));
-        setUser(userInfo);
-      } else {
+      const token = tokenOverride ?? getStoredToken();
+
+      if (!token) {
+        window.localStorage.removeItem("user");
         setUser(null);
+        setLoading(false);
+        return;
       }
-    } catch (err) {
-      console.error("Authentication check failed:", err);
-      const message = err instanceof Error ? err.message : "Authentication check failed";
-      setError(message);
-      setUser(null);
-    } finally {
-      setLoading(false);
-    }
-  };
+
+      try {
+        setLoading(true);
+        setError(null);
+        const res = await fetch(`${API_BASE_URL}/user/check_authentication/`, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          credentials: "include",
+        });
+
+        if (!res.ok) {
+          throw new Error(`Auth check failed with status: ${res.status}`);
+        }
+
+        const data = await res.json();
+        if (data.authenticated) {
+          const userInfo: AuthUser = {
+            username: data.username,
+            email: data.email,
+          };
+          window.localStorage.setItem("user", JSON.stringify(userInfo));
+          setUser(userInfo);
+        } else {
+          window.localStorage.removeItem("user");
+          setUser(null);
+        }
+      } catch (err) {
+        console.error("Authentication check failed:", err);
+        const message = err instanceof Error ? err.message : "Authentication check failed";
+        setError(message);
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
 
   useEffect(() => {
     if (isMounted.current) return;
     isMounted.current = true;
-    void performCheck();
-  }, []);
+
+    const { token } = hydrateFromStorage();
+    void performCheck(token);
+  }, [hydrateFromStorage, performCheck]);
 
   const logout = async (): Promise<void> => {
     try {
@@ -129,7 +146,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }): JSX.Element
   };
 
   const refreshAuth = async (): Promise<void> => {
-    setLoading(true);
     await performCheck();
   };
 

@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { TrendingUp, User } from "lucide-react";
 import { Button } from "../ui/Button";
@@ -5,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { useAuth } from "../../Pages/API/authCheck";
 
 export default function Header() {
-  const { user, logout } = useAuth();
+  const { user, logout, loading } = useAuth();
 
   const displayName = user?.username ?? "";
 
@@ -71,8 +73,10 @@ export default function Header() {
         </li>
       </ul>
 
-      <div className="flex items-center space-x-4">
-        {displayName ? (
+      <div className="flex items-center space-x-4" suppressHydrationWarning>
+        {loading ? (
+          <span className="text-sm text-gray-500">Loading account…</span>
+        ) : displayName ? (
           <>
             {/* Display authenticated user info */}
             <span className="text-sm font-medium text-gray-700">
