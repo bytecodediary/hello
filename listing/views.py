@@ -31,17 +31,17 @@ class NotificationListView(generics.ListAPIView):
         user = self.request.user
         queryset = Notification.objects.filter(
             user=user,
-            notification = Notification.is_read
+            is_read = False
         ).order_by('-received_at')
         return queryset
 
 class NotificationAPIView(generics.RetrieveDestroyAPIView):
     permission_classes = [permissions.IsAuthenticated]
-    serializer_classes = NotificationMiniSerializer
+    serializer_class = NotificationMiniSerializer
     queryset = Notification.objects.all()
 
     def retrieve(self,request, *args, **kwargs):
-        notification = self.get_object(user=request.user)
+        notification = self.get_object()
         if notification.user != request.user:
             raise PermissionDenied(
                 'This notification does not belong to you'
@@ -50,13 +50,13 @@ class NotificationAPIView(generics.RetrieveDestroyAPIView):
         return Response(serializer.data)
     
     def destroy(self, request, *args, **kwargs):
-        notification = self.get_object(user = request.user)
+        notification = self.get_object()
         if notification.user != request.user:
             raise PermissionDenied(
-                'Action not allowed as this notification does not belong to you'
+                'This notification does not belong to you'
             )
-        notification.delete()
-        return Response({'details': _('The notification has been deleted successfully')}, status=status.HTTP_204_NOT_FOUND)
+        self.perform_destroy(notification)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 class MarkAllAsReadView(generics.GenericAPIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -64,7 +64,7 @@ class MarkAllAsReadView(generics.GenericAPIView):
     def post(self, request):
         user = self.request.user
         notifications = Notification.objects.filter(
-            user=user, status = Notification.is_read is False
+            user=user, is_read = False
         )
 
         for notification in notifications:
@@ -72,8 +72,7 @@ class MarkAllAsReadView(generics.GenericAPIView):
                 raise PermissionDenied(
                     'Action not allowed'
                 )
-            notification.status = notification.is_read is True
-
+            notification.is_read = True
             notification.save()
         return Response('No new notification', status=status.HTTP_200_OK)
 

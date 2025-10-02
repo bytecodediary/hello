@@ -6,7 +6,6 @@ import { Button } from "@/app/Components/ui/Button";
 import Input from "@/app/Components/ui/Input";
 import Label from "@/app/Components/ui/label";
 import { Alert, AlertDescription } from "@/app/Components/ui/alert";
-import { registerUser } from "@/app/action/registeruser";
 
 export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -54,26 +53,61 @@ export default function RegisterPage() {
     formData.append("username", username);
     formData.append("email", email);
     formData.append("password", password);
-    formData.append("confirmPassword", confirmPassword);
     formData.append('first_name', first_name);
 
     try {
-      const result = await registerUser(formData, csrfToken);
-      setMessage(result.message);
+      // First, register the user
+      const registerResponse = await fetch("http://127.0.0.1:8000/user/register/", {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": csrfToken,
+        },
+        body: formData,
+        credentials: "include",
+      });
+
+      if (!registerResponse.ok) {
+        const errorData = await registerResponse.json();
+        throw new Error(
+          errorData.detail || errorData.message || "Registration failed. Please try again."
+        );
+      }
+
+      const registerResult = await registerResponse.json();
+      console.log("Registration successful:", registerResult);
+
+      // Now automatically log the user in
+      const loginFormData = new FormData();
+      loginFormData.append("email", email);
+      loginFormData.append("password", password);
+
+      const loginResponse = await fetch("http://127.0.0.1:8000/user/login/", {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": csrfToken,
+        },
+        body: loginFormData,
+        credentials: "include",
+      });
+
+      if (!loginResponse.ok) {
+        const errorData = await loginResponse.json();
+        throw new Error(
+          errorData.detail || "Registration successful, but login failed. Please try logging in manually."
+        );
+      }
+
+      const loginResult = await loginResponse.json();
+      localStorage.setItem("token", loginResult.token);
+      setMessage("Registration and login successful!");
       setTimeout(() => {
         router.push("/");
       }, 2000);
     } catch (err: any) {
-      // Handle different types of errors
-      if (err.response && err.response.data) {
-        setError(
-          err.response.data.message || "Registration failed. Please try again."
-        );
-      } else {
-        setError("An unexpected error occurred.");
-      }
+      console.error("Registration/Login error:", err);
+      setError(err.message || "An error occurred during registration. Please try again.");
     } finally {
-      setIsLoading(false); // Stop loading indicator
+      setIsLoading(false);
     }
   };
 

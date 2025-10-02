@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { Button } from "@/app/Components/ui/Button";
 import Input from "@/app/Components/ui/Input";
 import Label from "@/app/Components/ui/label";
-import { loginUser } from "@/app/action/loginuser";
 import { useRouter } from "next/navigation";
 
 // Define API URL using environment variable
@@ -24,7 +23,7 @@ export default function LoginPage() {
       setError("");
       
       try {
-        const res = await fetch('127.0.0.1:8000/user/get_csrf_token/', {
+        const res = await fetch('http://127.0.0.1:8000/user/get_csrf_token/', {
           method: "GET",
           credentials: "include",
           headers: {
@@ -69,13 +68,26 @@ export default function LoginPage() {
     const formData = new FormData(e.currentTarget);
 
     try {
-      const result = await loginUser(formData, csrfToken);
-      if (result.success) {
-        setMessage(result.message || "Login successful!");
-        setTimeout(() => router.push("/"), 2000);
-      } else {
-        setError(result.message || "Login failed. Please try again.");
+      const response = await fetch("http://127.0.0.1:8000/user/login/", {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": csrfToken,
+        },
+        body: formData,
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          errorData.detail || "An unexpected error occurred during login"
+        );
       }
+
+      const result = await response.json();
+      localStorage.setItem("token", result.token); // Store the JWT token
+      setMessage(result.message || "Login successful");
+      setTimeout(() => router.push("/"), 2000);
     } catch (error) {
       console.error("Login error:", error);
       setError("An error occurred during login. Please try again.");
