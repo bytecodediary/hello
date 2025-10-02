@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.apps import apps
 import string
 import random
 
@@ -13,14 +14,21 @@ def generate_unique_slug():
             return slug  # Return the unique slug once found
 
 def slug_in_any_model(slug):
+    Order = apps.get_model('order', 'Order')
+    Cart = apps.get_model('order', 'Cart')
+    Payment = apps.get_model('payment', 'Payment')
+    Transaction = apps.get_model('payment', 'Transaction')
+    OrderItem = apps.get_model('order', 'OrderItem')
+    CartItem = apps.get_model('order', 'CartItem')
+    
     return (
-        "order.Order".objects.filter(slug=slug).exists() or
-        "order.Cart".objects.filter(slug=slug).exists() or
+        Order.objects.filter(slug=slug).exists() or
+        Cart.objects.filter(slug=slug).exists() or
         Property.objects.filter(slug=slug).exists() or
-        "listing.Payment".objects.filter(slug=slug).exists() or 
-        "payment.Transaction".objects.filter(slug=slug).exists() or
-        "order.OrderItem".objects.filter(slug=slug).exists() or
-        "order.CartItem".objects.filter(slug=slug).exists()
+        Payment.objects.filter(slug=slug).exists() or 
+        Transaction.objects.filter(slug=slug).exists() or
+        OrderItem.objects.filter(slug=slug).exists() or
+        CartItem.objects.filter(slug=slug).exists()
     )
 
 class Property(models.Model):

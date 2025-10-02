@@ -1,5 +1,6 @@
 from django.db import models
 from user.models import CustomUser
+from listing.models import generate_unique_slug
 
 class Order(models.Model):
     order_status = (
@@ -19,7 +20,7 @@ class Order(models.Model):
     
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = property.generate_unique_slug()
+            self.slug = generate_unique_slug()
         super().save(*args, **kwargs)
     
 class OrderItem(models.Model):
@@ -32,8 +33,8 @@ class OrderItem(models.Model):
         return f"{self.property.title}"
     
     def save(self, *args, **kwargs):
-        if not self.save:
-            self.slug = property.generate_unique_slug()
+        if not self.slug:
+            self.slug = generate_unique_slug()
         super().save(*args, **kwargs)
 
 class Cart(models.Model):
@@ -47,8 +48,8 @@ class Cart(models.Model):
         return f"cart for {self.user.username}"
     
     def save(self, *args, **kwargs):
-        if not self.save:
-            self.slug = property.generate_unique_slug()
+        if not self.slug:
+            self.slug = generate_unique_slug()
         super().save(*args, **kwargs)
 
 class CartItem(models.Model):
@@ -62,6 +63,6 @@ class CartItem(models.Model):
     
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = property.generate_unique_slug()
+            self.slug = generate_unique_slug()
         super().save(*args, **kwargs)
     

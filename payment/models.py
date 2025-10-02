@@ -1,4 +1,5 @@
 from django.db import models
+from listing.models import generate_unique_slug
 
 class Payment(models.Model):
     PaymentModes = (
@@ -23,7 +24,7 @@ class Payment(models.Model):
     
     def save(self, *args, **kwargs):
         if not self.slug: 
-            self.slug = property.generate_unique_slug()
+            self.slug = generate_unique_slug()
         super().save(*args, **kwargs)
 
 class Transaction(models.Model):
@@ -56,5 +57,5 @@ class Transaction(models.Model):
     
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = property.generate_unique_slug()
+            self.slug = generate_unique_slug()
         super().save(*args, **kwargs)
