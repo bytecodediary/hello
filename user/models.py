@@ -90,16 +90,23 @@ class Agent(models.Model):
         return self.dob
  
 class Tenant(models.Model):
-    name = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
+    name = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name="tenant_profile")
     email = models.EmailField()
-    phone_number = PhoneNumberField(unique=True, blank=False, null=False)
-    lease_agreement = models.CharField(max_length=255)
-    rent_status = models.ForeignKey("payment.Payment", on_delete=models.CASCADE)
+    phone_number = PhoneNumberField(unique=False, blank=True, null=True)
+    lease_agreement = models.CharField(max_length=255, blank=True)
+    rent_status = models.ForeignKey(
+        "payment.Payment",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="tenant_profiles",
+    )
 
     @property
     def has_paid(self):
-        
-        return self.name.user_payments.filter(payment_mode="mpesa",).exists()
+        if self.rent_status:
+            return True
+        return self.name.user_payments.filter(payment_mode="mpesa").exists()
 
     def __str__(self):
         return self.name.username

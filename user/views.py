@@ -96,10 +96,13 @@ class TenantProfileView(generics.RetrieveAPIView):
     serializer_class = TenantSerializer
 
     def get_object(self):
-        try:
-            return Tenant.objects.select_related("name", "rent_status").get(name=self.request.user)
-        except Tenant.DoesNotExist as exc:
-            raise NotFound("Tenant profile not found") from exc
+        tenant, _ = Tenant.objects.select_related("name", "rent_status").get_or_create(
+            name=self.request.user,
+            defaults={
+                "email": self.request.user.email,
+            },
+        )
+        return tenant
 
 
 def get_csrf_token(request):

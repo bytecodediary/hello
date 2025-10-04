@@ -83,6 +83,7 @@ export interface PaymentSummary {
   payment_mode: string;
   description: string;
   added_at: string;
+  updated_at: string;
 }
 
 export interface TransactionRecord {

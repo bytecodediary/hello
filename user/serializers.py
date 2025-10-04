@@ -31,6 +31,12 @@ class CustomUserSerializer(serializers.ModelSerializer):
         user = CustomUser(**validated_data)
         user.set_password(validated_data['password'])
         user.save()
+        Tenant.objects.get_or_create(
+            name=user,
+            defaults={
+                'email': user.email,
+            }
+        )
         return user
 
 class ChangeUserTypeSerializer(serializers.ModelSerializer):
