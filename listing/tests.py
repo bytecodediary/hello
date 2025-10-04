@@ -1,5 +1,6 @@
 from django.test import TestCase
-from .models import CustomUser, Property, PropertyFeature, Owner, Image
+from user.models import CustomUser, Owner
+from .models import Property, PropertyFeature, Image, Notification
 # from rest_framework.test import APITestCase
 from .serializers import PropertySerializer
 from django.test.client import RequestFactory
@@ -33,8 +34,14 @@ class PropertyTest(TestCase):
             description='test description',
             city='location',
             status='available',
-            image=self.image,
-            landlord=self.user,
+            address='test address',
+            price=100000,
+            stock=1,
+        )
+        self.image = Image.objects.create(
+            image='path/to/image.png',
+            image_alt='test image alt',
+            property=self.property,
         )
 
     def test_property_creation(self):

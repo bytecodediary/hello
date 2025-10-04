@@ -37,11 +37,11 @@ The **Real Estate System** is an application designed to streamline the manageme
 3. setUp a virtual environment:
     ### on window:
     ```bash
-    python -m venv myenv
+    python -m venv .venv
     ```
     ### on linux:
     ```bash
-    python venv myenv
+    python -m venv .venv
     ```
 
 4. Install the dependencies:

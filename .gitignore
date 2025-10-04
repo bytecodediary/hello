@@ -4,6 +4,7 @@ hello/__pycache__/
 main/migrations/__pycache__/
 media/media/product_images/
 db.sqlite3
+.env
 core/__pycache__/
 core/migrations/__pycache__/
 property/migrations/__pycache__/
@@ -19,7 +20,7 @@ listing/migrations/__pycache__/
 frontend/__pycache__/
 frontend/__pycache__/
 main/__pycache__/
-
+.venv
 
 
 
