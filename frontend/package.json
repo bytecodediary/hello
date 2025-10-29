@@ -18,7 +18,7 @@
     "lib-utils-ts": "^0.0.0-test",
     "lucide-react": "^0.453.0",
     "next": "^14.2.23",
-    "next-auth": "^5.0.0-beta.25",
+    "next-auth": "^5.0.0-beta.30",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-hook-form": "^7.53.1",
