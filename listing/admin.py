@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Favorite, Image, Inquiry, Property, PropertyFeature
+from .models import Favorite, Image, Inquiry, Property, PropertyFeature, PropertyOffer
 
 # customizing the admin interface title and everything
 admin.site.site_header = 'house admin'
@@ -52,8 +52,16 @@ class FavoriteAdmin(admin.ModelAdmin):
     search_fields = ('property__title', 'user__email')
     readonly_fields = ('created_at',)
 
+
+class PropertyOfferAdmin(admin.ModelAdmin):
+    list_display = ('property', 'seeker', 'provider', 'offer_type', 'amount', 'currency', 'status', 'expires_at')
+    list_filter = ('offer_type', 'status', 'currency')
+    search_fields = ('property__title', 'seeker__email', 'provider__email')
+    readonly_fields = ('created_at', 'updated_at')
+
 admin.site.register(Property, PropertyAdmin )
 admin.site.register(PropertyFeature, PropertyFeatureAdmin)
 admin.site.register(Image, ImageAdmin)
 admin.site.register(Inquiry, InquiryAdmin)
 admin.site.register(Favorite, FavoriteAdmin)
+admin.site.register(PropertyOffer, PropertyOfferAdmin)

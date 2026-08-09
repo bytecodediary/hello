@@ -192,3 +192,48 @@ class Inquiry(models.Model):
             models.Index(fields=["property", "status"]),
             models.Index(fields=["seeker", "status"]),
         ]
+
+
+class PropertyOffer(models.Model):
+    TYPE_CHOICES = (
+        ("offer", "Offer"),
+        ("reservation", "Reservation request"),
+    )
+    STATUS_CHOICES = (
+        ("submitted", "Submitted"),
+        ("accepted", "Accepted"),
+        ("rejected", "Rejected"),
+        ("withdrawn", "Withdrawn"),
+        ("expired", "Expired"),
+    )
+
+    property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name="offers")
+    seeker = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="property_offers",
+    )
+    provider = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="received_property_offers",
+    )
+    offer_type = models.CharField(max_length=20, choices=TYPE_CHOICES, default="offer")
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    currency = models.CharField(max_length=3, default="KES")
+    message = models.TextField(max_length=2000, blank=True)
+    expires_at = models.DateTimeField(null=True, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="submitted")
+    provider_response = models.TextField(max_length=2000, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["property", "status"]),
+            models.Index(fields=["seeker", "status"]),
+            models.Index(fields=["provider", "status"]),
+        ]

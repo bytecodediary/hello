@@ -1,6 +1,7 @@
 from rest_framework import serializers
+from django.utils import timezone
 from user.serializers import OwnerSerializer
-from .models import Favorite, Inquiry, Property, PropertyFeature, Image, Notification
+from .models import Favorite, Inquiry, Property, PropertyFeature, Image, Notification, PropertyOffer
 from fcm_django.models import FCMDevice
 
 class PropertyFeaturesSerializer(serializers.ModelSerializer):
@@ -144,4 +145,43 @@ class InquirySerializer(serializers.ModelSerializer):
 class InquiryStatusSerializer(serializers.ModelSerializer):
     class Meta:
         model = Inquiry
+        fields = ['status', 'provider_response']
+
+
+class PropertyOfferSerializer(serializers.ModelSerializer):
+    property_slug = serializers.CharField(source='property.slug', read_only=True)
+    seeker_name = serializers.SerializerMethodField(read_only=True)
+    seeker_email = serializers.EmailField(source='seeker.email', read_only=True)
+
+    class Meta:
+        model = PropertyOffer
+        fields = [
+            'id', 'property', 'property_slug', 'offer_type', 'amount', 'currency',
+            'message', 'expires_at', 'status', 'provider_response', 'seeker_name',
+            'seeker_email', 'created_at', 'updated_at',
+        ]
+        read_only_fields = [
+            'id', 'property', 'property_slug', 'status', 'provider_response',
+            'seeker_name', 'seeker_email', 'created_at', 'updated_at',
+        ]
+
+    def get_seeker_name(self, obj):
+        return obj.seeker.get_full_name() or obj.seeker.username
+
+    def validate_amount(self, value):
+        if value <= 0:
+            raise serializers.ValidationError('The offer amount must be greater than zero.')
+        return value
+
+    def validate_expires_at(self, value):
+        if value and value <= timezone.now():
+            raise serializers.ValidationError('The offer expiry must be in the future.')
+        return value
+
+
+class PropertyOfferStatusSerializer(serializers.ModelSerializer):
+    status = serializers.ChoiceField(choices=(('accepted', 'Accepted'), ('rejected', 'Rejected')))
+
+    class Meta:
+        model = PropertyOffer
         fields = ['status', 'provider_response']

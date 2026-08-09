@@ -2,13 +2,15 @@ from .serializers import (
     FavoriteSerializer,
     InquirySerializer,
     InquiryStatusSerializer,
+    PropertyOfferSerializer,
+    PropertyOfferStatusSerializer,
     NotificationMiniSerializer,
     FCMDeviceSerializer,
     PropertySerializer,
 )
 from rest_framework import status, generics, permissions, serializers
 from rest_framework.filters import OrderingFilter, SearchFilter
-from .models import Favorite, Inquiry, Property, Notification
+from .models import Favorite, Inquiry, Property, Notification, PropertyOffer
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from .filters import PropertyFilter
@@ -211,6 +213,157 @@ class ProviderInquiryUpdateView(generics.UpdateAPIView):
             recipient_list=[inquiry.seeker.email],
             fail_silently=True,
         )
+
+
+def expire_property_offers(queryset):
+    queryset.filter(
+        status="submitted",
+        expires_at__isnull=False,
+        expires_at__lte=timezone.now(),
+    ).update(status="expired", updated_at=timezone.now())
+
+
+class PropertyOfferCreateView(generics.CreateAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = PropertyOfferSerializer
+
+    def create(self, request, *args, **kwargs):
+        property_instance = get_object_or_404(
+            Property,
+            slug=kwargs["slug"],
+            moderation_status="published",
+            status__in=("available", "pending"),
+        )
+        if property_instance.created_by_id == request.user.id:
+            return Response(
+                {"detail": "You cannot make an offer on your own listing."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if not property_instance.created_by_id:
+            return Response(
+                {"detail": "This listing is not connected to a provider yet."},
+                status=status.HTTP_409_CONFLICT,
+            )
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        with transaction.atomic():
+            offer = serializer.save(
+                property=property_instance,
+                seeker=request.user,
+                provider=property_instance.created_by,
+                currency=property_instance.currency,
+            )
+            Notification.objects.create(
+                user=property_instance.created_by,
+                message=f"New {offer.offer_type} received for {property_instance.title}.",
+            )
+            send_mail(
+                subject=f"New {offer.offer_type} for {property_instance.title}",
+                message=f"A seeker submitted {offer.amount} {offer.currency}.",
+                from_email=None,
+                recipient_list=[property_instance.created_by.email],
+                fail_silently=True,
+            )
+        return Response(self.get_serializer(offer).data, status=status.HTTP_201_CREATED)
+
+
+class SeekerOfferListView(generics.ListAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = PropertyOfferSerializer
+
+    def get_queryset(self):
+        queryset = PropertyOffer.objects.filter(seeker=self.request.user).select_related("property", "seeker")
+        expire_property_offers(queryset)
+        return queryset
+
+
+class SeekerOfferWithdrawView(generics.UpdateAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = PropertyOfferSerializer
+
+    def get_queryset(self):
+        return PropertyOffer.objects.filter(seeker=self.request.user).select_related("property", "seeker")
+
+    def update(self, request, *args, **kwargs):
+        offer = get_object_or_404(self.get_queryset(), pk=kwargs["pk"])
+        if offer.status != "submitted":
+            return Response(
+                {"detail": "Only submitted offers can be withdrawn."},
+                status=status.HTTP_409_CONFLICT,
+            )
+        offer.status = "withdrawn"
+        offer.save(update_fields=["status", "updated_at"])
+        if offer.provider_id:
+            Notification.objects.create(
+                user=offer.provider,
+                message=f"The seeker withdrew their {offer.offer_type} for {offer.property.title}.",
+            )
+        return Response(self.get_serializer(offer).data)
+
+
+class ProviderOfferListView(generics.ListAPIView):
+    permission_classes = [IsApprovedProvider]
+    serializer_class = PropertyOfferSerializer
+
+    def get_queryset(self):
+        queryset = PropertyOffer.objects.select_related("property", "seeker", "provider")
+        if not self.request.user.is_staff:
+            queryset = queryset.filter(provider=self.request.user)
+        expire_property_offers(queryset)
+        return queryset
+
+
+class ProviderOfferUpdateView(generics.UpdateAPIView):
+    permission_classes = [IsApprovedProvider]
+    serializer_class = PropertyOfferStatusSerializer
+    lookup_url_kwarg = "pk"
+
+    def get_queryset(self):
+        queryset = PropertyOffer.objects.select_related("property", "seeker", "provider")
+        if self.request.user.is_staff:
+            return queryset
+        return queryset.filter(provider=self.request.user)
+
+    def update(self, request, *args, **kwargs):
+        with transaction.atomic():
+            offer = get_object_or_404(self.get_queryset().select_for_update(), pk=kwargs["pk"])
+            if offer.status != "submitted":
+                return Response(
+                    {"detail": "Only submitted offers can be reviewed."},
+                    status=status.HTTP_409_CONFLICT,
+                )
+            if offer.expires_at and offer.expires_at <= timezone.now():
+                offer.status = "expired"
+                offer.save(update_fields=["status", "updated_at"])
+                return Response(
+                    {"detail": "This offer has expired."},
+                    status=status.HTTP_409_CONFLICT,
+                )
+            serializer = self.get_serializer(offer, data=request.data, partial=True)
+            serializer.is_valid(raise_exception=True)
+            if serializer.validated_data["status"] == "accepted":
+                accepted_exists = PropertyOffer.objects.filter(
+                    property=offer.property,
+                    status="accepted",
+                ).exclude(pk=offer.pk).exists()
+                if accepted_exists:
+                    return Response(
+                        {"detail": "This listing already has an accepted offer."},
+                        status=status.HTTP_409_CONFLICT,
+                    )
+            offer = serializer.save()
+            Notification.objects.create(
+                user=offer.seeker,
+                message=f"Your {offer.offer_type} for {offer.property.title} was {offer.status}.",
+            )
+            send_mail(
+                subject=f"Offer update for {offer.property.title}",
+                message=offer.provider_response or f"Your offer was {offer.status}.",
+                from_email=None,
+                recipient_list=[offer.seeker.email],
+                fail_silently=True,
+            )
+        return Response(PropertyOfferSerializer(offer, context={"request": request}).data)
 
 # notification views
 
