@@ -1,4 +1,6 @@
 from django.test import TestCase
+from rest_framework import status
+from rest_framework.test import APIClient
 from user.models import CustomUser, Owner
 from .models import Property, PropertyFeature, Image, Notification
 # from rest_framework.test import APITestCase
@@ -140,7 +142,13 @@ class PropertySerializerTest(TestCase):
     def test_serializer_fields(self):
         serializer = PropertySerializer(instance=self.property)
         data = serializer.data
-        expected_fields = {'slug', 'title', 'owners', 'description', 'price', 'images', 'city', 'address', 'listed_at', 'updated_at', 'features'}
+        expected_fields = {
+            'slug', 'title', 'owners', 'description', 'price', 'currency',
+            'listing_type', 'property_type', 'status', 'moderation_status',
+            'bedrooms', 'bathrooms', 'area_sqm', 'city', 'county',
+            'neighborhood', 'address', 'listed_at', 'updated_at', 'images',
+            'features', 'created_by_name', 'is_featured',
+        }
         self.assertEqual(set(data.keys()), expected_fields)
 
     def test_create_property(self):
@@ -237,3 +245,123 @@ class PropertyUpdateTest(TestCase):
         self.assertFalse(serializer.is_valid())
         self.assertIn('price', serializer.errors)
         self.assertIn('title', serializer.errors)
+
+
+class PropertyPermissionsApiTest(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.customer = CustomUser.objects.create_user(
+            username="customer", email="customer@example.com", password="password"
+        )
+        self.provider = CustomUser.objects.create_user(
+            username="provider", email="provider@example.com", password="password",
+            user_type="landlord", provider_status="approved",
+        )
+        self.other_provider = CustomUser.objects.create_user(
+            username="other-provider", email="other@example.com", password="password",
+            user_type="agent", provider_status="approved",
+        )
+        self.property = Property.objects.create(
+            title="Published home",
+            description="A published home",
+            city="Nairobi",
+            address="Westlands",
+            price=500000,
+            created_by=self.provider,
+            moderation_status="published",
+        )
+
+    def test_anonymous_user_can_browse_published_listings(self):
+        response = self.client.get("/api/v1/listings/")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["count"], 1)
+        self.assertEqual(response.data["results"][0]["slug"], self.property.slug)
+
+    def test_unapproved_user_cannot_access_provider_workspace(self):
+        self.client.force_authenticate(self.customer)
+        response = self.client.get("/api/v1/provider/listings/")
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_customer_cannot_create_listing(self):
+        self.client.force_authenticate(self.customer)
+        response = self.client.post("/api/v1/listings/", {
+            "title": "Unauthorized listing",
+            "description": "Should not be accepted",
+            "city": "Nairobi",
+            "address": "Kilimani",
+            "price": 200000,
+        }, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_approved_provider_creates_pending_listing(self):
+        self.client.force_authenticate(self.provider)
+        response = self.client.post("/api/v1/listings/", {
+            "title": "New listing",
+            "description": "A new provider listing",
+            "city": "Nairobi",
+            "address": "Kilimani",
+            "price": 200000,
+            "listing_type": "rent",
+            "property_type": "apartment",
+        }, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        created = Property.objects.get(slug=response.data["slug"])
+        self.assertEqual(created.created_by, self.provider)
+        self.assertEqual(created.moderation_status, "pending_review")
+
+    def test_provider_cannot_modify_another_providers_listing(self):
+        self.client.force_authenticate(self.other_provider)
+        response = self.client.patch(
+            f"/api/v1/listings/{self.property.slug}/",
+            {"title": "Tampered listing"},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.property.refresh_from_db()
+        self.assertEqual(self.property.title, "Published home")
+
+    def test_authenticated_seeker_can_save_and_remove_listing(self):
+        self.client.force_authenticate(self.customer)
+        response = self.client.post(f"/api/v1/listings/{self.property.slug}/favorite/")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(self.client.get("/api/v1/favorites/").data["count"], 1)
+
+        response = self.client.delete(f"/api/v1/listings/{self.property.slug}/favorite/")
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_authenticated_seeker_can_submit_inquiry(self):
+        self.client.force_authenticate(self.customer)
+        response = self.client.post(
+            f"/api/v1/listings/{self.property.slug}/inquiries/",
+            {"inquiry_type": "inquiry", "message": "Could I learn more about this home?"},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(self.property.inquiries.count(), 1)
+        self.assertEqual(Notification.objects.filter(user=self.provider).count(), 1)
+
+    def test_provider_can_update_inquiry_and_notify_seeker(self):
+        self.client.force_authenticate(self.customer)
+        inquiry_response = self.client.post(
+            f"/api/v1/listings/{self.property.slug}/inquiries/",
+            {"inquiry_type": "inquiry", "message": "Please share viewing times."},
+            format="json",
+        )
+        inquiry_id = inquiry_response.data["id"]
+
+        self.client.force_authenticate(self.provider)
+        response = self.client.patch(
+            f"/api/v1/provider/inquiries/{inquiry_id}/",
+            {"status": "contacted", "provider_response": "I can help this afternoon."},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["status"], "contacted")
+        self.assertEqual(Notification.objects.filter(user=self.customer).count(), 1)

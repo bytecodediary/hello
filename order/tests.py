@@ -1,55 +1,56 @@
 from django.test import TestCase
-from listing.models import CustomUser, Image, Property
-from .models import CartItem
 
-# Create your tests here.
+from listing.models import Property
+from user.models import CustomUser
+
+from .models import Cart, CartItem, Order, OrderItem
+
+
 class CartItemTest(TestCase):
     def setUp(self):
         self.user = CustomUser.objects.create_user(
-            email='example@gmail.com',
-            password='password',
-            username='username'
-        )
-        self.image = Image.objects.create(
-            image='image.png',
-            image_alt='test image alt'
+            email="example@gmail.com",
+            password="password",
+            username="username",
         )
         self.property = Property.objects.create(
-            title='test name',
-            description='test description',
-            city='location',
-            status='available',
-            image=self.image,
-            landlord=self.user,
+            title="test name",
+            description="test description",
+            city="Nairobi",
+            address="test address",
+            price=100000,
         )
+        self.cart = Cart.objects.create(user=self.user)
         self.cart_item = CartItem.objects.create(
             property=self.property,
-            quantity=3
+            quantity=3,
+            cart=self.cart,
         )
 
     def test_cart_item_creation(self):
         self.assertEqual(self.cart_item.quantity, 3)
-        self.assertEqual(self.cart_item.property.landlord.email, 'example@gmail.com')
+        self.assertEqual(self.cart_item.property.title, "test name")
 
-    def test_str(self):
-        self.assertEqual(str(self.cart_item), f'CartItem for {self.cart_item.property.title}')
+    def test_cart_total(self):
+        self.assertEqual(self.cart.total(), 300000)
 
-def OrderItemTests(TestCase):
-    def setUp(self):
-        self.user = CustomUser.objects.create(
-            email = 'example@gmail.com',
-            password = 'password',
-            username='username',
+
+class OrderItemTest(TestCase):
+    def test_order_item_creation(self):
+        user = CustomUser.objects.create_user(
+            email="buyer@gmail.com",
+            password="password",
+            username="buyer",
         )
-        self.image = Image.objects.create(
-            image = 'image.png',
-            image_alt = 'test image alt'
+        property_instance = Property.objects.create(
+            title="test name",
+            description="test description",
+            city="Nairobi",
+            address="test address",
+            price=100000,
         )
-        self.property = Property.objects.create(
-            title = 'test name',
-            description = 'test description',
-            city = 'location',
-            status = 'available',
-            image = self.image,
-            landlord = self.user,
-        )
+        order = Order.objects.create(user=user)
+        item = OrderItem.objects.create(order=order, property=property_instance, quantity=1)
+
+        self.assertEqual(item.property, property_instance)
+        self.assertEqual(item.order, order)

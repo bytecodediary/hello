@@ -48,15 +48,33 @@ The **Real Estate System** is an application designed to streamline the manageme
     ```
     pip install -r requirements.txt
     ```
-    
-5. Set up your environment variables (e.g., database credentials, secret keys).
 
-6. Run the development server:
+5. Set up your environment variables:
+    ```bash
+    cp .env.example .env
+    ```
+    Update `SECRET_KEY`, allowed hosts, CORS, CSRF, email, and database settings for your environment.
+
+6. Install the frontend dependencies:
+    ```bash
+    cd frontend
+    cp .env.example .env.local
+    npm ci
+    cd ..
+    ```
+
+7. Run the development server:
     ```bash
     python manage.py runserver
     ```
 
-7. Access the application at `http://localhost:8000`.
+8. In a second terminal, run the frontend:
+    ```bash
+    cd frontend
+    npm run dev
+    ```
+
+9. Access the application at `http://localhost:3000`.
 Additionally, you'll need the following setup
 
 # PostgreSQL Setup
@@ -157,5 +175,4 @@ We welcome contributions! If you'd like to contribute, please fork the repositor
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
 
