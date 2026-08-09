@@ -41,6 +41,32 @@ class AuthenticationApiTest(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["email"], "auth@example.com")
 
+    def test_refresh_rotates_and_blacklists_the_previous_refresh_cookie(self):
+        self.client.post(
+            "/user/api/v1/auth/login/",
+            {"email": "auth@example.com", "password": "password123"},
+            format="json",
+        )
+        self.client.get("/user/get_csrf_token/")
+        csrf_token = self.client.cookies["csrftoken"].value
+        original_refresh = self.client.cookies["realestate_refresh"].value
+
+        response = self.client.post(
+            "/user/api/v1/auth/refresh/",
+            HTTP_X_CSRFTOKEN=csrf_token,
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        rotated_refresh = response.cookies["realestate_refresh"].value
+        self.assertNotEqual(original_refresh, rotated_refresh)
+
+        self.client.cookies["realestate_refresh"] = original_refresh
+        replay_response = self.client.post(
+            "/user/api/v1/auth/refresh/",
+            HTTP_X_CSRFTOKEN=csrf_token,
+        )
+        self.assertEqual(replay_response.status_code, status.HTTP_401_UNAUTHORIZED)
+
     def test_cookie_authentication_requires_csrf_for_state_changes(self):
         self.client.post(
             "/user/api/v1/auth/login/",
@@ -72,6 +98,11 @@ class AuthenticationApiTest(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(self.client.get("/user/api/v1/auth/me/").status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_legacy_bearer_token_endpoints_are_retired(self):
+        response = self.client.post("/api/token/", {}, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_410_GONE)
 
 
 class ProviderApplicationApiTest(TestCase):

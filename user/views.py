@@ -5,7 +5,8 @@ from .serializers import AgentSerializer, ClientSerializer, OwnerSerializer, Cha
 from rest_framework.response import Response
 from django.http import JsonResponse
 from django.middleware.csrf import get_token
-from rest_framework_simplejwt.tokens import RefreshToken  # Importing here for clarity
+from rest_framework_simplejwt.serializers import TokenRefreshSerializer
+from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError, InvalidToken
 from django.conf import settings
 from django.utils import timezone
@@ -97,7 +98,7 @@ class UserLoginView(generics.GenericAPIView):
                     'provider_status': user.provider_status,
                 }
             }, status=status.HTTP_200_OK)
-            set_auth_cookies(response, refresh)
+            set_auth_cookies(response, str(refresh.access_token), str(refresh))
             return response
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
@@ -182,6 +183,12 @@ def check_authentification(request):
 @permission_classes([permissions.AllowAny])
 def logout_view(request):
     enforce_csrf(request)
+    raw_refresh = request.COOKIES.get(settings.AUTH_REFRESH_COOKIE)
+    if raw_refresh:
+        try:
+            RefreshToken(raw_refresh).blacklist()
+        except TokenError:
+            pass
     logout(request)
     response = Response({"message": "Logged out"}, status=status.HTTP_200_OK)
     response.delete_cookie("sessionid")
@@ -191,7 +198,7 @@ def logout_view(request):
     return response
 
 
-def set_auth_cookies(response, refresh):
+def set_auth_cookies(response, access_token, refresh_token):
     cookie_options = {
         "httponly": True,
         "secure": settings.AUTH_COOKIE_SECURE,
@@ -199,13 +206,13 @@ def set_auth_cookies(response, refresh):
     }
     response.set_cookie(
         settings.AUTH_ACCESS_COOKIE,
-        str(refresh.access_token),
+        access_token,
         max_age=int(settings.SIMPLE_JWT["ACCESS_TOKEN_LIFETIME"].total_seconds()),
         **cookie_options,
     )
     response.set_cookie(
         settings.AUTH_REFRESH_COOKIE,
-        str(refresh),
+        refresh_token,
         max_age=int(settings.SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"].total_seconds()),
         **cookie_options,
     )
@@ -220,9 +227,11 @@ class CookieTokenRefreshView(generics.GenericAPIView):
         if not raw_refresh:
             return Response({"detail": "Refresh token is required."}, status=status.HTTP_401_UNAUTHORIZED)
         try:
-            refresh = RefreshToken(raw_refresh)
+            serializer = TokenRefreshSerializer(data={"refresh": raw_refresh})
+            serializer.is_valid(raise_exception=True)
+            tokens = serializer.validated_data
             response = Response({"message": "Token refreshed."}, status=status.HTTP_200_OK)
-            set_auth_cookies(response, refresh)
+            set_auth_cookies(response, tokens["access"], tokens.get("refresh", raw_refresh))
             return response
         except TokenError as exc:
             raise InvalidToken(str(exc)) from exc
@@ -241,6 +250,15 @@ def auth_me(request):
         "user_type": user.user_type,
         "provider_status": user.provider_status,
     })
+
+
+@api_view(['POST'])
+@permission_classes([permissions.AllowAny])
+def deprecated_token_endpoint(request):
+    return Response(
+        {"detail": "Bearer token endpoints are retired. Use the HttpOnly cookie authentication endpoints."},
+        status=status.HTTP_410_GONE,
+    )
   
 class VerificationView(generics.GenericAPIView):
     serializer_class = VerificationSerializer
