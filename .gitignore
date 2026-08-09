@@ -1,4 +1,6 @@
 node_modules
+__pycache__/
+*.py[cod]
 main/__pycache__/
 hello/__pycache__/
 main/migrations/__pycache__/
