@@ -159,24 +159,42 @@ SECURE_REFERRER_POLICY = 'same-origin'
 X_FRAME_OPTIONS = 'DENY'
 EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@nyumba.local')
+
+# Keep SQLite as the zero-configuration development default, but make the
+# production connection explicit through environment variables.
+DB_ENGINE = config('DB_ENGINE', default='django.db.backends.sqlite3').strip()
+if DB_ENGINE == 'sqlite':
+    DB_ENGINE = 'django.db.backends.sqlite3'
+
+if DB_ENGINE == 'django.db.backends.sqlite3':
+    DATABASES = {
+        'default': {
+            'ENGINE': DB_ENGINE,
+            'NAME': config('DB_NAME', default=str(BASE_DIR / 'db.sqlite3')),
+        }
+    }
+else:
+    DB_NAME = config('DB_NAME', default='').strip()
+    if not DB_NAME:
+        raise ImproperlyConfigured('DB_NAME must be set when using a non-SQLite database.')
+
+    DATABASES = {
+        'default': {
+            'ENGINE': DB_ENGINE,
+            'NAME': DB_NAME,
+            'USER': config('DB_USER', default=''),
+            'PASSWORD': config('DB_PASSWORD', default=''),
+            'HOST': config('DB_HOST', default=''),
+            'PORT': config('DB_PORT', default=''),
+            'CONN_MAX_AGE': config('DB_CONN_MAX_AGE', default=60, cast=int),
+        }
+    }
+
+if config('USE_X_FORWARDED_PROTO', default=not DEBUG, cast=bool):
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-
-DATABASES = {
-    # "default": {
-    #     "ENGINE": "django.db.backends.mysql",
-    #     "NAME": "unreal", #postgres
-    #     "PORT": "5432",
-    #     "USER": "here", #postgres
-    #     "Host": "localhost",
-    #     "PASSWORD": "larrymax",
-    # }
-
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
 
 APPEND_SLASH=True
 
@@ -219,8 +237,63 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 
 STATICFILES_DIRS = [BASE_DIR / "static"] if (BASE_DIR / "static").exists() else []
 
-MEDIA_URL = "media/"
-MEDIA_ROOT = BASE_DIR / "media"
+MEDIA_URL = config('MEDIA_URL', default='/media/')
+MEDIA_ROOT = Path(config('MEDIA_ROOT', default=str(BASE_DIR / 'media')))
+
+USE_S3 = config('USE_S3', default=False, cast=bool)
+if USE_S3:
+    AWS_STORAGE_BUCKET_NAME = config('AWS_STORAGE_BUCKET_NAME', default='').strip()
+    AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID', default='').strip()
+    AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY', default='').strip()
+    if not all((AWS_STORAGE_BUCKET_NAME, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY)):
+        raise ImproperlyConfigured(
+            'AWS_STORAGE_BUCKET_NAME, AWS_ACCESS_KEY_ID, and AWS_SECRET_ACCESS_KEY '
+            'must be set when USE_S3 is enabled.'
+        )
+
+    AWS_S3_REGION_NAME = config('AWS_S3_REGION_NAME', default='').strip() or None
+    AWS_S3_FILE_OVERWRITE = False
+    AWS_DEFAULT_ACL = None
+    AWS_QUERYSTRING_AUTH = config('AWS_QUERYSTRING_AUTH', default=True, cast=bool)
+    AWS_S3_SIGNATURE_VERSION = config('AWS_S3_SIGNATURE_VERSION', default='s3v4')
+    MEDIA_URL = config(
+        'AWS_S3_CUSTOM_DOMAIN',
+        default=f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com',
+    )
+    if not MEDIA_URL.endswith('/'):
+        MEDIA_URL = f'{MEDIA_URL}/'
+    STORAGES = {
+        'default': {'BACKEND': 'storages.backends.s3.S3Storage'},
+        'staticfiles': {'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage'},
+    }
+else:
+    STORAGES = {
+        'default': {'BACKEND': 'django.core.files.storage.FileSystemStorage'},
+        'staticfiles': {'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage'},
+    }
+
+LOG_LEVEL = config('LOG_LEVEL', default='INFO').upper()
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'default': {
+            'format': '{levelname} {asctime} {name} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'default',
+        },
+    },
+    'loggers': {
+        'django': {'handlers': ['console'], 'level': LOG_LEVEL, 'propagate': False},
+        'django.request': {'handlers': ['console'], 'level': 'WARNING', 'propagate': False},
+        'django.server': {'handlers': ['console'], 'level': 'INFO', 'propagate': False},
+    },
+}
 
 LOGIN_URL = "login"
 LOGOUT_URL = "logout"
