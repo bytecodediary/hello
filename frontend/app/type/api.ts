@@ -145,6 +145,23 @@ export interface InquiryRecord {
   updated_at: string;
 }
 
+export interface PropertyOfferRecord {
+  id: number;
+  property: number;
+  property_slug: string;
+  offer_type: "offer" | "reservation";
+  amount: number | string;
+  currency: string;
+  message: string;
+  expires_at: string | null;
+  status: "submitted" | "accepted" | "rejected" | "withdrawn" | "expired";
+  provider_response: string;
+  seeker_name: string;
+  seeker_email: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface AuthCheckResponse {
   authenticated: boolean;
   username?: string;
