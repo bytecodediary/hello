@@ -34,35 +34,35 @@ export default function Header() {
       {/* Navigation Links */}
       <ul className="hidden md:flex space-x-10">
         <li>
-          <Link href="/Pages/Search/" className="text-gray-600 hover:text-gray-900">
+          <Link href="/properties?listing_type=sale" className="text-gray-600 hover:text-gray-900">
             Buy
           </Link>
         </li>
         <li>
-          <Link href="/Pages/invoices/" className="text-gray-600 hover:text-gray-900">
+          <Link href="/properties?listing_type=rent" className="text-gray-600 hover:text-gray-900">
             Rent
           </Link>
         </li>
         <li>
-          <Link href="/real" className="text-gray-600 hover:text-gray-900">
+          <Link href="/provider/listings" className="text-gray-600 hover:text-gray-900">
             Sell
           </Link>
         </li>
         <li>
-          <Link href="/Pages/profile/" className="text-gray-600 hover:text-gray-900">
+          <Link href="/about" className="text-gray-600 hover:text-gray-900">
             About
           </Link>
          
         </li>
         <li>
-          <Link href="/Pages/profile/" className="text-gray-600 hover:text-gray-900">
+          <Link href="/account" className="text-gray-600 hover:text-gray-900">
             Profile
           </Link>
          
         </li>
         <li>
-          <Link href="/Pages/propertypage/" className="text-gray-600 hover:text-gray-900">
-            Properties
+          <Link href="/properties" className="text-gray-600 hover:text-gray-900">
+            Explore
           </Link>
          
         </li>
@@ -101,11 +101,11 @@ export default function Header() {
         ) : (
           <>
             {/* If user is not authenticated, show login/register links */}
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/Pages/login/register">New Here?</Link>
+          <Button variant="ghost" size="sm" asChild>
+              <Link href="/register">New Here?</Link>
             </Button>
             <Button asChild>
-              <Link href="/Pages/login/">Log In</Link>
+              <Link href="/login">Log In</Link>
             </Button>
           </>
         )}

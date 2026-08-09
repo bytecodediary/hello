@@ -46,7 +46,7 @@ export default function PropertyCard({ property, onClick }: PropertyCardProps) {
               style: 'currency',
               currency: 'KES',
               maximumFractionDigits: 0,
-            }).format(property.price)}
+            }).format(Number(property.price))}
           </span>
         </div>
         <div className="mt-2 flex items-center text-gray-600">

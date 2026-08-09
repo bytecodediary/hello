@@ -21,15 +21,34 @@ export interface PropertyRecord {
   slug: string;
   title: string;
   description: string;
-  price: number;
+  price: number | string;
+  currency: string;
+  listing_type: "sale" | "rent";
+  property_type: "house" | "apartment" | "townhouse" | "land" | "commercial" | "other";
   city: string;
+  county: string;
+  neighborhood: string;
   address: string;
   status: "sold" | "pending" | "available";
+  moderation_status: "draft" | "pending_review" | "published" | "rejected" | "archived";
+  bedrooms: number;
+  bathrooms: number | string;
+  area_sqm: number | string | null;
+  is_featured: boolean;
+  created_by_name: string | null;
   listed_at: string;
   updated_at: string;
   images?: PropertyImage[];
   features?: PropertyFeature[];
   owners?: PropertyOwner[];
+}
+
+export interface FavoriteRecord {
+  id: number;
+  property: number;
+  property_slug: string;
+  property_details: PropertyRecord;
+  created_at: string;
 }
 
 export interface PaginatedResponse<T> {
@@ -108,6 +127,22 @@ export interface NotificationRecord {
   user: string;
   received_at: string;
   is_read: boolean;
+}
+
+export interface InquiryRecord {
+  id: number;
+  property: number;
+  property_slug: string;
+  inquiry_type: "inquiry" | "viewing";
+  message: string;
+  preferred_start: string | null;
+  preferred_end: string | null;
+  status: string;
+  provider_response: string;
+  seeker_name: string;
+  seeker_email: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface AuthCheckResponse {

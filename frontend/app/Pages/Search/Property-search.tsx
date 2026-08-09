@@ -2,6 +2,7 @@ import { InputSearch } from "../../Components/ui/Input-search";
 import { ButtonSearch } from "../../Components/ui/Buttonsearch";
 import { Checkbox } from "../../Components/ui/checkbox";
 import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
 
 interface PropertySearchProps {
   location: string;
@@ -23,10 +24,10 @@ export default function PropertySearch({
 
   return (
     <div className="sidebar max-w-md mx-auto p-4 bg-white">
-      <a href="/" className="flex items-center mb-4">
+      <Link href="/" className="flex items-center mb-4">
         <ArrowLeft className="w-6 h-6 mr-2" />
         <h1 className="text-xl font-semibold">Find your property</h1>
-      </a>
+      </Link>
       <form onSubmit={handleSubmit} className="space-y-4">
         <InputSearch
           placeholder="Enter city, state, or ZIP code"

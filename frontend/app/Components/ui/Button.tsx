@@ -1,5 +1,5 @@
 import * as React from "react";
-import Link from "next/link"; // Import Link from Next.js
+import Link from "next/link";
 import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/app/libs/utils";
@@ -44,24 +44,21 @@ export interface ButtonProps
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, href, ...props }, ref) => {
-    const Comp = asChild ? Slot : href ? "a" : "button"; // Render <a> if href is present
-
-    // If href is provided, render a link for Next.js
+    const classes = cn(buttonVariants({ variant, size, className }));
     if (href) {
+      const linkProps = props as unknown as React.ComponentProps<typeof Link>;
       return (
-        <Link href={href} passHref legacyBehavior>
-          <a
-            className={cn(buttonVariants({ variant, size, className }))}
-            {...props}
-          />
-        </Link>
+        <Link {...linkProps} href={href} className={classes} />
       );
     }
 
-    // Render button normally if href is not provided
+    if (asChild) {
+      return <Slot ref={ref} className={classes} {...props} />;
+    }
+
     return (
       <button
-        className={cn(buttonVariants({ variant, size, className }))}
+        className={classes}
         ref={ref}
         {...props}
       />

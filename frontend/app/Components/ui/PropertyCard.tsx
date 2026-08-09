@@ -1,4 +1,5 @@
 import React from "react";
+import Image from "next/image";
 
 interface PropertyCardProps {
   id: string;
@@ -26,13 +27,13 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
 }) => {
   return (
     <div className="border rounded-lg shadow-md overflow-hidden">
-      <img
+      <Image
         src={imageUrl}
         alt={name}
         className="w-full h-48 object-cover"
-        onError={(e) => {
-          e.currentTarget.src = "/Public/Image/apartment.svg"; 
-        }}
+        width={600}
+        height={300}
+        unoptimized
       />
       <div className="p-4">
         <h3 className="text-xl font-semibold">{name}</h3>

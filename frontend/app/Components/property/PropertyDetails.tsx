@@ -15,7 +15,7 @@ export default function PropertyDetails({ property, onBack }: PropertyDetailsPro
     style: 'currency',
     currency: 'KES',
     maximumFractionDigits: 0,
-  }).format(property.price);
+  }).format(Number(property.price));
 
   return (
     <div className="bg-white rounded-lg shadow-lg overflow-hidden">

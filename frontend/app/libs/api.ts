@@ -65,19 +65,15 @@ function defaultHeaders(body: ApiRequestOptions["body"]): HeadersInit {
   };
 }
 
-function getAuthHeader(): HeadersInit {
-  if (typeof window === "undefined") {
-    return {};
-  }
+function getCookie(name: string): string | null {
+  if (typeof document === "undefined") return null;
+  const value = document.cookie.split("; ").find((cookie) => cookie.startsWith(`${name}=`));
+  return value ? decodeURIComponent(value.split("=").slice(1).join("=")) : null;
+}
 
-  const token = window.localStorage.getItem("token");
-  if (!token) {
-    return {};
-  }
-
-  return {
-    Authorization: `Bearer ${token}`,
-  };
+async function ensureCsrfCookie(): Promise<void> {
+  if (typeof window === "undefined" || getCookie("csrftoken")) return;
+  await fetch(`${API_BASE_URL}/user/get_csrf_token/`, { credentials: "include" });
 }
 
 async function parseJson<T>(response: Response): Promise<T | null> {
@@ -98,12 +94,19 @@ export async function apiFetch<TResponse>(
   endpoint: string,
   options: ApiRequestOptions = {}
 ): Promise<TResponse> {
-  const { query, body, headers, authenticated = true, method = "GET", ...rest } = options;
+  const { query, body, headers, authenticated: _authenticated = true, method = "GET", ...rest } = options;
+  void _authenticated;
+
+  if (!["GET", "HEAD", "OPTIONS"].includes(method)) {
+    await ensureCsrfCookie();
+  }
 
   const url = `${API_BASE_URL}${endpoint}${buildQueryString(query)}`;
   const baseHeaders: HeadersInit = {
     ...defaultHeaders(body),
-    ...(authenticated ? getAuthHeader() : {}),
+    ...(!["GET", "HEAD", "OPTIONS"].includes(method) && getCookie("csrftoken")
+      ? { "X-CSRFToken": getCookie("csrftoken") as string }
+      : {}),
   };
 
   const response = await fetch(url, {

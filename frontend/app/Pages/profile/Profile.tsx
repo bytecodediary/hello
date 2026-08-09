@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import {
   User, Home, CreditCard, Wrench, FileText, Bell, Phone,
-  CheckCircle, Calendar, Clock, ChevronRight, Shield, Mail
+  CheckCircle, ChevronRight, Shield
 } from 'lucide-react';
 
 export default function TenantProfile() {

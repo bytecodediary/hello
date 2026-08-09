@@ -98,7 +98,7 @@ export default function CardProperties({
                     style: "currency",
                     currency: "KES",
                     maximumFractionDigits: 0,
-                  }).format(property.price)}
+                  }).format(Number(property.price))}
                 </p>
                 <p className="text-sm text-muted-foreground">
                   Listed on {new Date(property.listed_at).toLocaleDateString()}

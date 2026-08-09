@@ -11,7 +11,6 @@ import {
   Phone,
   CheckCircle,
   Shield,
-  Mail,
   Info,
 } from 'lucide-react';
 import Header from '@/app/Components/Layouts/Header';
