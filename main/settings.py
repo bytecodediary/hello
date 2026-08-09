@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     # added simplejwt for jason web token
     "rest_framework_simplejwt",
     "rest_framework_simplejwt.token_blacklist",
+    "payment.daraja_config.DarajaConfig",
     # "django_guardians",
     "corsheaders",
     "user",
@@ -159,6 +160,8 @@ SECURE_REFERRER_POLICY = 'same-origin'
 X_FRAME_OPTIONS = 'DENY'
 EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@nyumba.local')
+PAYMENT_PROVIDER = config('PAYMENT_PROVIDER', default='disabled').strip().lower()
+MPESA_CALLBACK_BASE_URL = config('MPESA_CALLBACK_BASE_URL', default='').strip().rstrip('/')
 
 # Keep SQLite as the zero-configuration development default, but make the
 # production connection explicit through environment variables.
