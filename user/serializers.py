@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate
 
-from .models import Agent, Client, Owner, CustomUser, Verification, Appointment, Tenant
+from .models import Agent, Client, Owner, CustomUser, ProviderApplication, Verification, Appointment, Tenant
 
 
 
@@ -14,7 +14,6 @@ class OwnerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Owner
         fields = ['id', 'properties', 'user', 'property_details', 'phone_number' ]
-    
     def get_property_details(self, obj):
         # Implement this method to return property details if needed
         return obj.properties.title if obj.properties else None
@@ -24,8 +23,8 @@ class CustomUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ['id', 'username', 'first_name',  'email', 'password'] #'first_name', 'last_name',
-        read_only_fields = ['id']
+        fields = ['id', 'username', 'first_name', 'last_name', 'email', 'password', 'user_type', 'provider_status']
+        read_only_fields = ['id', 'user_type', 'provider_status']
 
     def create(self, validated_data):
         user = CustomUser(**validated_data)
@@ -45,12 +44,32 @@ class ChangeUserTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         fields = ['new_user_type']
-    
+
     def update(self, instance, validated_data):
         new_user_type = validated_data['new_user_type']
         
         instance.apply_for_type_change(new_user_type)
         return instance
+
+
+class ProviderApplicationSerializer(serializers.ModelSerializer):
+    user = CustomUserSerializer(read_only=True)
+
+    class Meta:
+        model = ProviderApplication
+        fields = [
+            'id', 'user', 'requested_type', 'organization_name', 'phone_number',
+            'message', 'status', 'review_notes', 'reviewed_at', 'created_at',
+        ]
+        read_only_fields = ['id', 'user', 'status', 'review_notes', 'reviewed_at', 'created_at']
+
+    def validate(self, attrs):
+        user = self.context['request'].user
+        if user.provider_status == 'approved':
+            raise serializers.ValidationError('This account is already an approved provider.')
+        if ProviderApplication.objects.filter(user=user, status='pending').exists():
+            raise serializers.ValidationError('You already have a provider application under review.')
+        return attrs
 
 class LoginSerializer(serializers.Serializer):  # Use Serializer instead of ModelSerializer
     email = serializers.EmailField()
@@ -156,5 +175,3 @@ class TenantSerializer(serializers.ModelSerializer):
 
     def get_has_paid(self, obj):
         return bool(obj.has_paid)
-
-    

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Property, PropertyFeature, Image
+from .models import Favorite, Image, Inquiry, Property, PropertyFeature
 
 # customizing the admin interface title and everything
 admin.site.site_header = 'house admin'
@@ -12,9 +12,9 @@ class ImageInline(admin.TabularInline):
 
 class PropertyAdmin(admin.ModelAdmin):
     inlines = [ImageInline]
-    list_display = ('title', 'city', 'price', 'address', 'listed_at', 'status')
-    list_filter = ('status', 'city', 'price')
-    search_fields = ('name', 'city', 'address')
+    list_display = ('title', 'city', 'price', 'address', 'listed_at', 'status', 'moderation_status', 'created_by')
+    list_filter = ('status', 'moderation_status', 'listing_type', 'property_type', 'city')
+    search_fields = ('title', 'city', 'address', 'created_by__email')
     # prepopulated_fields = {'slug': ('name', 'city')}
     ordering = ('-updated_at',)
  
@@ -39,6 +39,21 @@ class PropertyFeatureAdmin(admin.ModelAdmin):
 class ImageAdmin(admin.ModelAdmin):
     list_display = ('image_alt',)
 
+
+class InquiryAdmin(admin.ModelAdmin):
+    list_display = ('property', 'seeker', 'inquiry_type', 'status', 'created_at', 'updated_at')
+    list_filter = ('inquiry_type', 'status')
+    search_fields = ('property__title', 'seeker__email', 'message')
+    readonly_fields = ('created_at', 'updated_at')
+
+
+class FavoriteAdmin(admin.ModelAdmin):
+    list_display = ('property', 'user', 'created_at')
+    search_fields = ('property__title', 'user__email')
+    readonly_fields = ('created_at',)
+
 admin.site.register(Property, PropertyAdmin )
 admin.site.register(PropertyFeature, PropertyFeatureAdmin)
 admin.site.register(Image, ImageAdmin)
+admin.site.register(Inquiry, InquiryAdmin)
+admin.site.register(Favorite, FavoriteAdmin)

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import CustomUser, Owner, Client, Agent
+from .models import CustomUser, Owner, Client, Agent, ProviderApplication
 
 class CustomUserAdmin(admin.ModelAdmin):
     list_display = ('first_name', 'last_name', 'email', 'username', 'user_type')
@@ -23,7 +23,15 @@ class AgentAdmin(admin.ModelAdmin):
     list_filter = ('agent__username', 'phone_number')
     ordering = ('-agent__username',)
 
+
+class ProviderApplicationAdmin(admin.ModelAdmin):
+    list_display = ('user', 'requested_type', 'status', 'created_at', 'reviewed_at')
+    list_filter = ('requested_type', 'status')
+    search_fields = ('user__email', 'user__username', 'organization_name')
+    ordering = ('-created_at',)
+
 admin.site.register(CustomUser, CustomUserAdmin)
 admin.site.register(Client, ClientAdmin)
 admin.site.register(Owner, OwnerAdmin)
 admin.site.register(Agent, AgentAdmin)
+admin.site.register(ProviderApplication, ProviderApplicationAdmin)
