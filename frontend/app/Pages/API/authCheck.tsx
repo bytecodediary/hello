@@ -2,7 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import type { ComponentType } from "react";
-import { apiClient } from "../../libs/api";
+import { ApiError, apiClient } from "../../libs/api";
 
 interface AuthUser {
   id: string;
@@ -40,7 +40,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }): JSX.Element
         setError(null);
         const userInfo = await apiClient.get<AuthUser>("/user/api/v1/auth/me/");
         setUser(userInfo);
-      } catch {
+      } catch (requestError) {
+        if (requestError instanceof ApiError && requestError.status === 401) {
+          try {
+            await apiClient.post("/user/api/v1/auth/refresh/");
+            setUser(await apiClient.get<AuthUser>("/user/api/v1/auth/me/"));
+            return;
+          } catch {
+            // The refresh cookie is absent or expired; treat the session as signed out.
+          }
+        }
         setError(null);
         setUser(null);
       } finally {

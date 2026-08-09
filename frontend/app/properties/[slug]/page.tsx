@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 
 import PropertyDetails from "../../Components/property/PropertyDetails";
-import type { PropertyRecord } from "../../type/api";
+import type { FavoriteRecord, PropertyRecord } from "../../type/api";
 import { ApiError, apiClient } from "../../libs/api";
 import { useAuth } from "../../Pages/API/authCheck";
 
@@ -95,6 +95,13 @@ export default function PropertyPage() {
       .catch((requestError) => setError(requestError instanceof ApiError ? requestError.message : "Property could not be loaded."))
       .finally(() => setLoading(false));
   }, [params.slug]);
+
+  useEffect(() => {
+    if (!user || !property) return;
+    apiClient.get<{ results: FavoriteRecord[] }>("/api/v1/favorites/")
+      .then((response) => setSaved(response.results.some((favorite) => favorite.property_slug === property.slug)))
+      .catch(() => setSaved(false));
+  }, [property, user]);
 
   async function toggleSaved() {
     if (!property || !user) return;
