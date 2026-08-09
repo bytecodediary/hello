@@ -2,7 +2,7 @@ from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APIClient
 from user.models import CustomUser, Owner
-from .models import Property, PropertyFeature, Image, Notification
+from .models import Notification, Property, PropertyFeature, Image, PropertyOffer
 # from rest_framework.test import APITestCase
 from .serializers import PropertySerializer
 from django.test.client import RequestFactory
@@ -365,3 +365,79 @@ class PropertyPermissionsApiTest(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["status"], "contacted")
         self.assertEqual(Notification.objects.filter(user=self.customer).count(), 1)
+
+    def test_seeker_can_submit_offer_and_provider_can_accept_it(self):
+        self.client.force_authenticate(self.customer)
+        response = self.client.post(
+            f"/api/v1/listings/{self.property.slug}/offers/",
+            {
+                "offer_type": "offer",
+                "amount": "450000.00",
+                "message": "I would like to proceed with this property.",
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        offer = PropertyOffer.objects.get(pk=response.data["id"])
+        self.assertEqual(offer.provider, self.provider)
+        self.assertEqual(Notification.objects.filter(user=self.provider).count(), 1)
+
+        self.client.force_authenticate(self.provider)
+        response = self.client.patch(
+            f"/api/v1/provider/offers/{offer.pk}/",
+            {"status": "accepted", "provider_response": "Offer accepted."},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        offer.refresh_from_db()
+        self.assertEqual(offer.status, "accepted")
+        self.assertEqual(Notification.objects.filter(user=self.customer).count(), 1)
+
+    def test_provider_cannot_accept_two_offers_for_one_listing(self):
+        first = PropertyOffer.objects.create(
+            property=self.property,
+            seeker=self.customer,
+            provider=self.provider,
+            amount=400000,
+            status="accepted",
+        )
+        second = PropertyOffer.objects.create(
+            property=self.property,
+            seeker=self.other_provider,
+            provider=self.provider,
+            amount=410000,
+        )
+
+        self.client.force_authenticate(self.provider)
+        response = self.client.patch(
+            f"/api/v1/provider/offers/{second.pk}/",
+            {"status": "accepted"},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
+        second.refresh_from_db()
+        self.assertEqual(second.status, "submitted")
+        self.assertEqual(first.status, "accepted")
+
+    def test_seeker_can_withdraw_submitted_offer(self):
+        offer = PropertyOffer.objects.create(
+            property=self.property,
+            seeker=self.customer,
+            provider=self.provider,
+            amount=420000,
+        )
+
+        self.client.force_authenticate(self.customer)
+        response = self.client.patch(
+            f"/api/v1/account/offers/{offer.pk}/withdraw/",
+            {},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        offer.refresh_from_db()
+        self.assertEqual(offer.status, "withdrawn")
+        self.assertEqual(Notification.objects.filter(user=self.provider).count(), 1)
