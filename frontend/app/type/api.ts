@@ -121,6 +121,23 @@ export interface PaymentRecord extends PaymentSummary {
   transactions: TransactionRecord[];
 }
 
+export interface PaymentIntentRecord {
+  id: string;
+  offer_id: number;
+  property_slug: string;
+  amount: number | string;
+  currency: string;
+  payment_mode: string;
+  phone_number: string;
+  status: 'pending' | 'processing' | 'succeeded' | 'failed' | 'cancelled';
+  merchant_request_id: string;
+  checkout_request_id: string;
+  provider_reference: string;
+  failure_reason: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface NotificationRecord {
   id: number;
   message: string;
