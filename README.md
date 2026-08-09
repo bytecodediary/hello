@@ -19,7 +19,7 @@ The **Real Estate System** is an application designed to streamline the manageme
 
 - **main**: Django (filters, rest_framework, )
 - **Frontend**: JavaScript (React, nextjs)
-- **Database**: PostgreSQL
+- **Database**: SQLite for local development, PostgreSQL for production
 - **Authentication**: JWT / OAuth for secure login and user management
 - **Deployment**: Docker, Nginx, and Gunicorn for scalable production deployment
 
@@ -53,7 +53,7 @@ The **Real Estate System** is an application designed to streamline the manageme
     ```bash
     cp .env.example .env
     ```
-    Update `SECRET_KEY`, allowed hosts, CORS, CSRF, email, and database settings for your environment.
+    Update `SECRET_KEY`, allowed hosts, CORS, CSRF, email, and database settings for your environment. Keep `DEBUG=False` in production.
 
 6. Install the frontend dependencies:
     ```bash
@@ -77,7 +77,7 @@ The **Real Estate System** is an application designed to streamline the manageme
 9. Access the application at `http://localhost:3000`.
 Additionally, you'll need the following setup
 
-# PostgreSQL Setup
+# Production database setup
 
 This section provides instructions on how to set up PostgreSQL for this project.
 
@@ -137,14 +137,23 @@ Before you begin, ensure you have the following installed on your machine:
 
 ### Step 4: Configure Database Connection
 
-Update your project's configuration file (e.g .env, but mostly settings.py in development environment) with the database connection details:
+Set the database backend through environment variables. SQLite remains the default for local development. For PostgreSQL, use:
 
 ```plaintext
+DB_ENGINE=django.db.backends.postgresql
 DB_HOST=localhost
 DB_PORT=5432
 DB_NAME=your_database_name
 DB_USER=your_username
 DB_PASSWORD=your_password
+DB_CONN_MAX_AGE=60
+```
+
+The PostgreSQL driver is included in `requirements.txt`. Run migrations after the database is reachable:
+
+```bash
+python manage.py migrate --noinput
+python manage.py collectstatic --noinput
 ```
 
 ### Step 5: Run Migrations
@@ -152,9 +161,17 @@ DB_PASSWORD=your_password
 Run the migrations to set up the database schema:
 
 ```bash
-# Example command to run the database schema migration in django
-python manage.py migrate
+# Apply the database schema
+python manage.py migrate --noinput
 ```
+
+## Production operations
+
+- Configure `ALLOWED_HOSTS`, `CORS_ALLOWED_ORIGINS`, `CSRF_TRUSTED_ORIGINS`, a strong `SECRET_KEY`, and secure cookie/HTTPS settings through the environment.
+- Set `USE_S3=True` and the `AWS_*` variables in `.env` when media must survive container replacement. The default filesystem storage is suitable only for a persistent local volume.
+- Point the load balancer or process supervisor at `GET /health/`. It returns HTTP 200 only when Django can reach the configured database and HTTP 503 otherwise.
+- The repository quality workflow runs migration drift checks, Django checks/tests, frontend linting, TypeScript validation, and the production frontend build on pushes and pull requests.
+- Payment and transaction records are read-only until a real payment provider, signed callback endpoint, reconciliation process, and escrow policy are configured. The application does not fabricate successful payments.
 
 ## Troubleshooting
 
@@ -175,4 +192,3 @@ We welcome contributions! If you'd like to contribute, please fork the repositor
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
