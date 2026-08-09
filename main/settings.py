@@ -193,9 +193,6 @@ else:
 if config('USE_X_FORWARDED_PROTO', default=not DEBUG, cast=bool):
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
-# Database
-# https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-
 APPEND_SLASH=True
 
 # Password validation
@@ -256,10 +253,9 @@ if USE_S3:
     AWS_DEFAULT_ACL = None
     AWS_QUERYSTRING_AUTH = config('AWS_QUERYSTRING_AUTH', default=True, cast=bool)
     AWS_S3_SIGNATURE_VERSION = config('AWS_S3_SIGNATURE_VERSION', default='s3v4')
-    MEDIA_URL = config(
-        'AWS_S3_CUSTOM_DOMAIN',
-        default=f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com',
-    )
+    MEDIA_URL = config('AWS_S3_CUSTOM_DOMAIN', default='').strip()
+    if not MEDIA_URL:
+        MEDIA_URL = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
     if not MEDIA_URL.endswith('/'):
         MEDIA_URL = f'{MEDIA_URL}/'
     STORAGES = {
