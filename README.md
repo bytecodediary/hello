@@ -77,6 +77,16 @@ The **Real Estate System** is an application designed to streamline the manageme
 9. Access the application at `http://localhost:3000`.
 Additionally, you'll need the following setup
 
+## Run the production-like stack locally
+
+Copy `.env.example` to `.env`, set `SECRET_KEY`, `DB_NAME`, `DB_USER`, and `DB_PASSWORD`, then run:
+
+```bash
+docker compose up --build
+```
+
+The backend is available at `http://localhost:8000`, the frontend at `http://localhost:3000`, and PostgreSQL/media data persist in named volumes. Stop the stack with `docker compose down`; use `docker compose down -v` only when intentionally deleting the local database and media volumes.
+
 # Production database setup
 
 This section provides instructions on how to set up PostgreSQL for this project.
@@ -171,7 +181,16 @@ python manage.py migrate --noinput
 - Set `USE_S3=True` and the `AWS_*` variables in `.env` when media must survive container replacement. The default filesystem storage is suitable only for a persistent local volume.
 - Point the load balancer or process supervisor at `GET /health/`. It returns HTTP 200 only when Django can reach the configured database and HTTP 503 otherwise.
 - The repository quality workflow runs migration drift checks, Django checks/tests, frontend linting, TypeScript validation, and the production frontend build on pushes and pull requests.
-- Payment and transaction records are read-only until a real payment provider, signed callback endpoint, reconciliation process, and escrow policy are configured. The application does not fabricate successful payments.
+- Payment collection remains disabled until a real payment provider, callback URL, reconciliation process, and escrow policy are configured. The application does not fabricate successful payments.
+- Schedule `scripts/backup_postgres.sh` with the hosting platform's secret manager and retain encrypted off-host backups. The script never deletes existing backups.
+
+### Payment lifecycle
+
+1. A seeker can create a payment intent only for their own accepted offer:
+   `POST /payment/intents/` with `Idempotency-Key`, `offer`, and `phone_number`.
+2. With `PAYMENT_PROVIDER=mpesa`, the server starts an M-Pesa STK push and stores it as `processing`.
+3. The provider callback at `/payment/callback/mpesa/<callback-token>/` is idempotent. Only a successful callback creates the immutable payment and transaction records.
+4. Keep `PAYMENT_PROVIDER=disabled` until all M-Pesa credentials, a public HTTPS callback URL, reconciliation monitoring, and the business escrow policy are approved.
 
 ## Troubleshooting
 

@@ -1,0 +1,13 @@
+.git
+.github
+.env
+db.sqlite3
+media
+staticfiles
+__pycache__
+*.py[cod]
+frontend/node_modules
+frontend/.next
+frontend/.env*
+node_modules
+AGENTS.md
