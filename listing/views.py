@@ -285,19 +285,23 @@ class SeekerOfferWithdrawView(generics.UpdateAPIView):
         return PropertyOffer.objects.filter(seeker=self.request.user).select_related("property", "seeker")
 
     def update(self, request, *args, **kwargs):
-        offer = get_object_or_404(self.get_queryset(), pk=kwargs["pk"])
-        if offer.status != "submitted":
-            return Response(
-                {"detail": "Only submitted offers can be withdrawn."},
-                status=status.HTTP_409_CONFLICT,
+        with transaction.atomic():
+            offer = get_object_or_404(
+                self.get_queryset().select_for_update(),
+                pk=kwargs["pk"],
             )
-        offer.status = "withdrawn"
-        offer.save(update_fields=["status", "updated_at"])
-        if offer.provider_id:
-            Notification.objects.create(
-                user=offer.provider,
-                message=f"The seeker withdrew their {offer.offer_type} for {offer.property.title}.",
-            )
+            if offer.status != "submitted":
+                return Response(
+                    {"detail": "Only submitted offers can be withdrawn."},
+                    status=status.HTTP_409_CONFLICT,
+                )
+            offer.status = "withdrawn"
+            offer.save(update_fields=["status", "updated_at"])
+            if offer.provider_id:
+                Notification.objects.create(
+                    user=offer.provider,
+                    message=f"The seeker withdrew their {offer.offer_type} for {offer.property.title}.",
+                )
         return Response(self.get_serializer(offer).data)
 
 
@@ -327,6 +331,10 @@ class ProviderOfferUpdateView(generics.UpdateAPIView):
     def update(self, request, *args, **kwargs):
         with transaction.atomic():
             offer = get_object_or_404(self.get_queryset().select_for_update(), pk=kwargs["pk"])
+            property_instance = get_object_or_404(
+                Property.objects.select_for_update(),
+                pk=offer.property_id,
+            )
             if offer.status != "submitted":
                 return Response(
                     {"detail": "Only submitted offers can be reviewed."},
@@ -343,7 +351,7 @@ class ProviderOfferUpdateView(generics.UpdateAPIView):
             serializer.is_valid(raise_exception=True)
             if serializer.validated_data["status"] == "accepted":
                 accepted_exists = PropertyOffer.objects.filter(
-                    property=offer.property,
+                    property=property_instance,
                     status="accepted",
                 ).exclude(pk=offer.pk).exists()
                 if accepted_exists:
@@ -354,10 +362,10 @@ class ProviderOfferUpdateView(generics.UpdateAPIView):
             offer = serializer.save()
             Notification.objects.create(
                 user=offer.seeker,
-                message=f"Your {offer.offer_type} for {offer.property.title} was {offer.status}.",
+                message=f"Your {offer.offer_type} for {property_instance.title} was {offer.status}.",
             )
             send_mail(
-                subject=f"Offer update for {offer.property.title}",
+                subject=f"Offer update for {property_instance.title}",
                 message=offer.provider_response or f"Your offer was {offer.status}.",
                 from_email=None,
                 recipient_list=[offer.seeker.email],
